@@ -22,12 +22,26 @@ tw-sidebar tw-icon {
     display: none !important;
 }
 
+/* PC 기본 위치: 오른쪽 아래 */
 #bgm-audio {
     position: fixed;
     bottom: 10px;
     right: 10px;
     z-index: 9999;
 }
+
+/* 📱 모바일(화면이 좁을 때)은 아래 중앙에 크게 보여주기 */
+@media (max-width: 768px) {
+    #bgm-audio {
+        bottom: 8px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+    }
+}
+
 
 /* 4) 타자기 효과용 공통 스타일 */
 .typewriter {
