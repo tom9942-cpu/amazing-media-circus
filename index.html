@@ -100,6 +100,28 @@ tw-link {
 tw-link:hover {
     text-decoration: underline;
 }
+
+tw-passage {
+    font-size: 30px !important;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* 화면 전체를 flex 컨테이너로 만들고, 가운데 정렬 */
+tw-passage {
+    display: flex;
+    flex-direction: column;     /* 세로 배치 */
+    justify-content: center;    /* 세로 중앙 정렬 */
+    align-items: center;        /* 가로 중앙 정렬 */
+
+    min-height: 100vh !important;  /* 화면 높이 전체 사용 */
+    text-align: center;  
+}
+
+  
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">// 타자기 효과 함수
 window.typeWriter = function (element, speed = 35) {
     const text = element.textContent;
@@ -156,7 +178,9 @@ document.addEventListener("twine:passageend", function () {
   }
 })();
 
-</script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">안녕하세요. </tw-passagedata></tw-storydata>
+</script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">안녕하세요.
+우측 아래에 BGM도 있습니다.
+=|=</tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
  * https://github.com/paulmillr/es6-shim
