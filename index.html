@@ -34,53 +34,98 @@ tw-sidebar tw-icon {
     white-space: pre-wrap;
     display: inline-block;
 }
+
+tw-story {
+    max-width: 480px;   /* 폰 폭 기준 */
+    margin: 0 auto;     /* 가운데 정렬 */
+    padding: 16px;      /* 양옆 여백 */
+}
+
+tw-passage {
+    font-size: 16px;    /* 기본 폰 크기 */
+    line-height: 1.6;   /* 줄 간격 */
+}
+
+.choice-link {
+    display: block;
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 999px;
+    text-align: center;
+    border: 1px solid #fff;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+}
+
+/* 터치 시 시각적 피드백 */
+.choice-link:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+}
+
+tw-passage input,
+tw-passage textarea {
+    font-size: 16px;      /* 키보드/입력과 잘 맞게 */
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">// 타자기 효과 함수
 window.typeWriter = function (element, speed = 35) {
-  const text = element.textContent;
-  element.textContent = "";
-  let i = 0;
+    const text = element.textContent;
+    element.textContent = "";
+    let i = 0;
 
-  function typing() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(typing, speed);
+    function typing() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(typing, speed);
+        }
     }
-  }
-
-  typing();
+    typing();
 };
 
-// 패시지 로딩이 끝날 때마다 실행
+// 패시지 로딩이 끝날 때 실행되는 이벤트
 document.addEventListener("twine:passageend", function () {
-  const els = document.querySelectorAll(".typewriter");
-  els.forEach(el => window.typeWriter(el, 35)); // 속도 조절: 숫자 낮을수록 빠름
+    const els = document.querySelectorAll(".typewriter");  // ★ 반드시 필요
+    els.forEach(el => window.typeWriter(el, 35));
 });
 
-// ★ BGM 세팅 코드 ★
-window.addEventListener("DOMContentLoaded", function () {
 
-  // 이미 만들어져 있으면 또 만들지 않음
-  if (document.getElementById("bgm-audio")) return;
+// ★ BGM 세팅 코드 (Twine 환경용 안전 버전) ★
+(function () {
+  function setupBGM() {
+    // 이미 만들어져 있으면 또 만들지 않음
+    if (document.getElementById("bgm-audio")) return;
 
-  var audio = document.createElement("audio");
-  audio.id = "bgm-audio";
+    var audio = document.createElement("audio");
+    audio.id = "bgm-audio";
 
-  // mp3 파일 경로 (지금은 bgm.mp3로 가정)
-  audio.src = "bgm.mp3";
+    // mp3 파일 경로 (지금은 bgm.mp3로 가정)
+    audio.src = "bgm.mp3";
 
-  audio.loop = true;      // 반복 재생
-  audio.volume = 0.4;     // 0 ~ 1 사이 (원하면 조절)
-  audio.autoplay = true;  // 자동 재생 시도
-  audio.controls = true;  // 재생/일시정지 버튼 표시
+    audio.loop = true;      // 반복 재생
+    audio.volume = 0.4;     // 0 ~ 1 사이 (원하면 조절)
+    audio.autoplay = true;  // 자동 재생 시도
+    audio.controls = true;  // 재생/일시정지 버튼 표시
 
-  // 자동재생이 막혀도 에러 안 나게
-  audio.play().catch(function (e) {
-    console.log("자동 재생이 차단됨:", e);
-  });
+    // 자동재생이 막혀도 앱이 멈추지 않게
+    audio.play().catch(function (e) {
+      console.log("자동 재생이 차단됨:", e);
+    });
 
-  document.body.appendChild(audio);
-});
+    document.body.appendChild(audio);
+  }
+
+  // 이미 DOM이 준비됐으면 바로 실행, 아니면 DOMContentLoaded까지 대기
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", setupBGM);
+  } else {
+    setupBGM();
+  }
+})();
+
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">안녕하세요. </tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
