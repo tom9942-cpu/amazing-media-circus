@@ -127,47 +127,44 @@ tw-passage {
     margin: 0 auto 16px auto;  /* 위 아래 여백 */
     border-radius: 8px;        /* 모서리 살짝 둥글게 (원하지 않으면 지워도 됨) */
 }
-</style><script role="script" id="twine-user-script" type="text/twine-javascript">// 타자기 효과 함수
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">// ----------------------
+// 1. 타자기 효과
+// ----------------------
 window.typeWriter = function (element, speed = 35) {
-    const text = element.textContent;
-    element.textContent = "";
-    let i = 0;
+  const text = element.textContent;
+  element.textContent = "";
+  let i = 0;
 
-    function typing() {
-        if (i < text.length) {
-            element.textContent += text.charAt(i);
-            i++;
-            setTimeout(typing, speed);
-        }
+  function typing() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
     }
-    typing();
+  }
+  typing();
 };
 
-// 패시지 로딩이 끝날 때 실행되는 이벤트
 document.addEventListener("twine:passageend", function () {
-    const els = document.querySelectorAll(".typewriter");  // ★ 반드시 필요
-    els.forEach(el => window.typeWriter(el, 35));
+  const els = document.querySelectorAll(".typewriter");
+  els.forEach(el => window.typeWriter(el, 35));
 });
 
-
-// ★ BGM 세팅 코드 (Twine 환경용 안전 버전) ★
+// ----------------------
+// 2. BGM 설정
+// ----------------------
 (function () {
   function setupBGM() {
-    // 이미 만들어져 있으면 또 만들지 않음
     if (document.getElementById("bgm-audio")) return;
 
     var audio = document.createElement("audio");
     audio.id = "bgm-audio";
+    audio.src = "bgm.mp3";   // 파일 이름은 상황에 맞게
+    audio.loop = true;
+    audio.volume = 0.4;
+    audio.autoplay = true;
+    audio.controls = true;
 
-    // mp3 파일 경로 (지금은 bgm.mp3로 가정)
-    audio.src = "bgm.mp3";
-
-    audio.loop = true;      // 반복 재생
-    audio.volume = 0.4;     // 0 ~ 1 사이 (원하면 조절)
-    audio.autoplay = true;  // 자동 재생 시도
-    audio.controls = true;  // 재생/일시정지 버튼 표시
-
-    // 자동재생이 막혀도 앱이 멈추지 않게
     audio.play().catch(function (e) {
       console.log("자동 재생이 차단됨:", e);
     });
@@ -175,7 +172,6 @@ document.addEventListener("twine:passageend", function () {
     document.body.appendChild(audio);
   }
 
-  // 이미 DOM이 준비됐으면 바로 실행, 아니면 DOMContentLoaded까지 대기
   if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", setupBGM);
   } else {
@@ -183,123 +179,37 @@ document.addEventListener("twine:passageend", function () {
   }
 })();
 
-// ★ 구글 Apps Script 웹 앱 URL
-const WEB_APP_URL = "여기에_웹앱_URL_붙여넣기";
-
-// 텍스트 하나 저장 (kind, mood, text)
-window.saveAudienceText = function(kind, mood, text) {
-  const payload = { kind, mood, text };
-
-  return fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).then(res => res.json())
-    .then(data => {
-      console.log("saved:", data);
-      return data;
-    }).catch(err => {
-      console.error("saveAudienceText error:", err);
-      return { status: 'error', error: err };
-    });
-};
-
-// 랜덤 텍스트 하나 가져오기
-// kind만 쓰거나, kind + mood까지 넣어서 호출 가능
-window.fetchRandomAudienceText = function(kind, mood, callback) {
-  let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
-  if (mood) {
-    url += "&mood=" + encodeURIComponent(mood);
-  }
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      console.log("random text:", data.text);
-      if (callback) callback(data.text || "");
-    })
-    .catch(err => {
-      console.error("fetchRandomAudienceText error:", err);
-      if (callback) callback("");
-    });
-};
-
-// 관객 텍스트 저장 함수 (이미 만들어둔 거)
-window.saveAudienceText = function(kind, mood, text) {
-  const payload = { kind, mood, text };
-
-  return fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).then(res => res.json())
-    .then(data => {
-      console.log("saved:", data);
-      return data;
-    }).catch(err => {
-      console.error("saveAudienceText error:", err);
-      return { status: 'error', error: err };
-    });
-};
-
-// 패시지 전환될 때마다 검사
-document.addEventListener("twine:passageend", function () {
-    // 슬픈일 제출 패시지에 들어왔을 때만 저장
-    const saveSadEl = document.querySelector("#save-sad");
-    if (saveSadEl) {
-        const text = State.variables.sadText || "";
-        saveAudienceText("event", "sad", text);
-    }
-});
-
-// 랜덤 텍스트 하나를 가져오는 엔드포인트 (GET)
-// 예: ?kind=event&mood=sad  또는 ?kind=event&mood=happy
-function doGet(e) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: 'Sheet not found: ' + SHEET_NAME })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const kind = (e.parameter.kind || '').toString();   // 'event' or 'word' ...
-  const mood = (e.parameter.mood || '').toString();   // 'sad' / 'happy' / ''
-
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ text: '' })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const values = sheet.getRange(2, 1, lastRow - 1, 4).getValues(); // A~D (timestamp, kind, mood, text)
-
-  const texts = values
-    .filter(row => {
-      const rowKind = (row[1] || '').toString();
-      const rowMood = (row[2] || '').toString();
-      if (kind && rowKind !== kind) return false;
-      if (mood && rowMood !== mood) return false;
-      return (row[3] || '').toString().trim() !== '';
-    })
-    .map(row => (row[3] || '').toString().trim());
-
-  let randomText = '';
-  if (texts.length > 0) {
-    const idx = Math.floor(Math.random() * texts.length);
-    randomText = texts[idx];
-  }
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ text: randomText })
-  ).setMimeType(ContentService.MimeType.JSON);
-}
-
-// ★ 구글 웹앱 URL (이미 쓰고 있는 그 주소)
+// ----------------------
+// 3. 구글 웹앱 URL  (★ 한 번만 선언)
+// ----------------------
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLmK4Cf8QFbbTSZHEWlNplr_wA3paRXpDQmdBYXVmJ6bUT_fNK0Nu7qlKa31ZETLLc6Q/exec";
 
-// 랜덤 텍스트 가져오기 (kind, mood 기준)
-window.fetchRandomAudienceText = function(kind, mood, callback) {
+// ----------------------
+// 4. 관객 텍스트 저장 함수
+// ----------------------
+window.saveAudienceText = function (kind, mood, text) {
+  const payload = { kind, mood, text };
+
+  return fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("saved:", data);
+      return data;
+    })
+    .catch(err => {
+      console.error("saveAudienceText error:", err);
+      return { status: "error", error: err };
+    });
+};
+
+// ----------------------
+// 5. 랜덤 텍스트 가져오기 함수
+// ----------------------
+window.fetchRandomAudienceText = function (kind, mood, callback) {
   let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
   if (mood) {
     url += "&mood=" + encodeURIComponent(mood);
@@ -317,19 +227,29 @@ window.fetchRandomAudienceText = function(kind, mood, callback) {
     });
 };
 
+// ----------------------
+// 6. 패시지 전환 시: 저장 + 랜덤 텍스트 표시
+// ----------------------
 document.addEventListener("twine:passageend", function () {
-  // 슬픈 이야기 랜덤 표시
+  // ① 슬픈 텍스트 저장 (#save-sad 요소가 있는 패시지에서만)
+  const saveSadEl = document.querySelector("#save-sad");
+  if (saveSadEl) {
+    const text = State.variables.sadText || "";
+    saveAudienceText("event", "sad", text);
+  }
+
+  // ② 슬픈 이야기 랜덤 표시
   const sadBox = document.querySelector("#random-sad");
   if (sadBox) {
-    fetchRandomAudienceText("event", "sad", function(text) {
+    fetchRandomAudienceText("event", "sad", function (text) {
       sadBox.textContent = text || "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
 
-  // 기쁜 이야기 랜덤 표시
+  // ③ 기쁜 이야기 랜덤 표시
   const happyBox = document.querySelector("#random-happy");
   if (happyBox) {
-    fetchRandomAudienceText("event", "happy", function(text) {
+    fetchRandomAudienceText("event", "happy", function (text) {
       happyBox.textContent = text || "아직 남겨진 기쁜 이야기가 없습니다.";
     });
   }
