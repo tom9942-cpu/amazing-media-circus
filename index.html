@@ -223,30 +223,15 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
 };
 
 //------------------------------------------------
-// 5. passage가 끝날 때마다 실행되는 공통 처리
+// 5. 랜덤 박스 감시해서 내용 채우기 (형식 상관 없음 버전)
 //------------------------------------------------
-document.addEventListener("twine:passageend", function () {
-  console.log(">>> twine:passageend fired");
-
-  // 5-1. 타자기 효과
-  const els = document.querySelectorAll(".typewriter");
-  els.forEach(el => window.typeWriter(el, 35));
-
-  // 5-2. 슬픈 글 저장 (#save-sad 있는 패시지만)
-  const saveSadEl = document.querySelector("#save-sad");
-  if (saveSadEl && window.State && State.variables) {
-    const text = State.variables.sadText || "";
-    if (text && text.trim()) {
-      console.log("save sadText:", text);
-      saveAudienceText("event", "sad", text);
-    }
-  }
-
-  // 5-3. 기쁜 이야기 랜덤 표시
+function updateRandomBoxesOnce() {
+  // 1) 기쁜 이야기
   const happyBox = document.querySelector("#random-happy");
-  if (happyBox) {
-    console.log("found #random-happy");
-    happyBox.textContent = "음..."; // 기본 문구
+  if (happyBox && !happyBox.dataset.loaded) {   // 아직 한 번도 안 불러왔을 때만
+    console.log("found #random-happy, loading text");
+    happyBox.dataset.loaded = "1";              // 다시 안 불러오게 표시
+    happyBox.textContent = "음...";             // 기본 문구
 
     fetchRandomAudienceText("event", "happy", function (text) {
       console.log("happy text from server:", text);
@@ -257,10 +242,11 @@ document.addEventListener("twine:passageend", function () {
     });
   }
 
-  // 5-4. 슬픈 이야기 랜덤 표시 (있으면)
+  // 2) 슬픈 이야기 (있으면)
   const sadBox = document.querySelector("#random-sad");
-  if (sadBox) {
-    console.log("found #random-sad");
+  if (sadBox && !sadBox.dataset.loaded) {
+    console.log("found #random-sad, loading text");
+    sadBox.dataset.loaded = "1";
     sadBox.textContent = "음...";
 
     fetchRandomAudienceText("event", "sad", function (text) {
@@ -271,7 +257,11 @@ document.addEventListener("twine:passageend", function () {
           : "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
-});
+}
+
+// 0.7초마다 화면 검사해서, 해당 span이 등장하면 한 번만 실행
+setInterval(updateRandomBoxesOnce, 700);
+
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 [[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
