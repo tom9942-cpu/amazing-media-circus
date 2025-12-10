@@ -293,8 +293,8 @@ function updateRandomBoxesOnce() {
       console.log("happy text from server:", text);
       happyBox.textContent =
         text && text.trim()
-          ? text
-          : "아직 남겨진 기쁜 이야기가 없습니다.";
+		? '“' + text.trim() + '”'
+  		: "아직 남겨진 기쁜 이야기가 없습니다.";
     });
   }
 
@@ -309,8 +309,8 @@ function updateRandomBoxesOnce() {
       console.log("sad text from server:", text);
       sadBox.textContent =
         text && text.trim()
-          ? text
-          : "아직 남겨진 슬픈 이야기가 없습니다.";
+		? '“' + text.trim() + '”'
+    	: "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
 
@@ -325,8 +325,8 @@ function updateRandomBoxesOnce() {
       console.log("hope text from server:", text);
       hopeBox.textContent =
         text && text.trim()
-          ? text
-          : "아직 남겨진 희망의 이야기가 없습니다.";
+    	? '“' + text.trim() + '”'
+    	: "아직 남겨진 희망의 이야기가 없습니다.";
     });
   }
 }
@@ -518,13 +518,13 @@ document.addEventListener("click", function (e) {
 다음 사람에게 작은 빛을 남깁니다.
 우리를 걱정하며 지켜봐주는
 수많은 관객 앞에 위험천만한 묘기를 선보이는
-서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100"> &lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;음...&lt;/span&gt;
+서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100"> &lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;잠시만 기다려주세요...&lt;/span&gt;
 이 일로 스스로 무너질 수도 있었지만
 저를 도와주는 사람들이 있기에
 버틸 수 있었답니다.&lt;/br&gt;
 반대로
 &lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;
-이런 좋은 일들도 있기 때문에
+ 이런 좋은 일들도 있기 때문에
 묵묵히 잘 이겨냈다고
 생각이 들기도 해요.&lt;/p&gt;
 
