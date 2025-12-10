@@ -338,7 +338,6 @@ setInterval(updateRandomBoxesOnce, 700);
 // 6. 슬픈/기쁜/희망 이야기 저장 + 연타 방지 + 자동 이동
 //------------------------------------------------
 function handleSave(kindKey) {
-  // 어떤 종류인지에 따라 id / hook 이름 매핑
   const inputId  =
     (kindKey === "sad")   ? "sad-input"   :
     (kindKey === "happy") ? "happy-input" :
@@ -362,7 +361,6 @@ function handleSave(kindKey) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
 
-  // 🔒 이미 전송 중이면 무시 (연타 방지)
   if (btn.dataset.sending === "1") {
     console.log("already sending, ignore extra click");
     return;
@@ -401,7 +399,6 @@ function handleSave(kindKey) {
     if (result && result.status === "ok") {
       if (statusEl) statusEl.textContent = "저장되었습니다.";
 
-      // ✅ 저장 성공하면 자동으로 '다음으로' 링크 클릭
       const link = document.querySelector(
         'tw-hook[name="' + hookName + '"] tw-link'
       );
@@ -478,7 +475,7 @@ document.addEventListener("click", function (e) {
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
 
-(link-goto: &quot;다음으로&quot;, &quot;HAPPY_R&quot;)</tw-passagedata><tw-passagedata pid="8" name="다다다음" tags="" position="1100,1525" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
+(link-goto: &quot;다음으로&quot;, &quot;HAPPY&quot;)</tw-passagedata><tw-passagedata pid="8" name="다다다음" tags="" position="1100,1525" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
 슬프게도, 그것은 누구의 잘못도 아니죠.
 다만, 떨어졌다는 사실만이 분명합니다.
 그리고 떨어진 이상,
@@ -493,7 +490,7 @@ document.addEventListener("click", function (e) {
 그때, 누군가가 나를 붙잡아 주었습니다.
 
 그는 아주 조용히, 말했습니다.
-&lt;span id=&quot;random-hope&quot;&gt;...&lt;/span&gt;
+&lt;span id=&quot;random-hope&quot;&gt;기억해 내는 중...&lt;/span&gt;
 
 
 (link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1825" size="100,100">또 하나의 질문을 더 하고 싶습니다.
@@ -522,12 +519,13 @@ document.addEventListener("click", function (e) {
 우리를 걱정하며 지켜봐주는
 수많은 관객 앞에 위험천만한 묘기를 선보이는
 서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100"> &lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;음...&lt;/span&gt;
-어쩌면 스스로 무너질 수도 있었지만
+이 일로 스스로 무너질 수도 있었지만
 저를 도와주는 사람들이 있기에
 버틸 수 있었답니다.&lt;/br&gt;
 반대로
-&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;이런 좋은 일들도 있기 때문에
-모두가 묵묵히 잘 이겨냈다고
+&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;
+이런 좋은 일들도 있기 때문에
+묵묵히 잘 이겨냈다고
 생각이 들기도 해요.&lt;/p&gt;
 
 (link-goto: &quot;다음으로&quot;, &quot;NEXTT&quot;)
@@ -539,14 +537,14 @@ document.addEventListener("click", function (e) {
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
 
-(link-goto: &quot;다음으로&quot;, &quot;SAD_R&quot;)</tw-passagedata><tw-passagedata pid="15" name="SAD_R" tags="" position="900,1525" size="100,100">흠... 뜻밖의 상실이 찾아오기도 하고,
+(link-goto: &quot;다음으로&quot;, &quot;SAD&quot;)</tw-passagedata><tw-passagedata pid="15" name="SAD" tags="" position="900,1525" size="100,100">흠... 뜻밖의 상실이 찾아오기도 하고,
 오랫동안 마음이 무너질 때도 있습니다.
 하지만 어떤 날들은,
 그 슬픔을 기억하는 마음 자체가
 다시 걸어갈 힘이 되기도 하죠.
 저 역시 좌절한 적이 있습니다.
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY_R" tags="" position="1300,1525" size="100,100">뜻 밖의 행운이 찾아올 때도 있고,
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY" tags="" position="1300,1525" size="100,100">뜻 밖의 행운이 찾아올 때도 있고,
 오래 바라던 일이 이루어질 때도 있습니다.
 그리고 어떤 날들은,
 힘든 순간을 견디게 해주는
