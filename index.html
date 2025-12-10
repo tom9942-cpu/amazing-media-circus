@@ -127,32 +127,9 @@ tw-passage {
     margin: 0 auto 16px auto;  /* 위 아래 여백 */
     border-radius: 8px;        /* 모서리 살짝 둥글게 (원하지 않으면 지워도 됨) */
 }
-</style><script role="script" id="twine-user-script" type="text/twine-javascript">// ----------------------
-// 1. 타자기 효과
-// ----------------------
-window.typeWriter = function (element, speed = 35) {
-  const text = element.textContent;
-  element.textContent = "";
-  let i = 0;
-
-  function typing() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(typing, speed);
-    }
-  }
-  typing();
-};
-
-document.addEventListener("twine:passageend", function () {
-  const els = document.querySelectorAll(".typewriter");
-  els.forEach(el => window.typeWriter(el, 35));
-});
-
-// ----------------------
-// 2. BGM 설정
-// ----------------------
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">//------------------------------------------------
+// 0. BGM 설정
+//------------------------------------------------
 (function () {
   function setupBGM() {
     if (document.getElementById("bgm-audio")) return;
@@ -179,14 +156,32 @@ document.addEventListener("twine:passageend", function () {
   }
 })();
 
-// ----------------------
-// 3. 구글 웹앱 URL  (★ 한 번만 선언)
-// ----------------------
+//------------------------------------------------
+// 1. 타자기 효과
+//------------------------------------------------
+window.typeWriter = function (element, speed = 35) {
+  const text = element.textContent;
+  element.textContent = "";
+  let i = 0;
+
+  function typing() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+    }
+  }
+  typing();
+};
+
+//------------------------------------------------
+// 2. 구글 웹앱 URL (★ 네가 쓰는 URL)
+//------------------------------------------------
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLmK4Cf8QFbbTSZHEWlNplr_wA3paRXpDQmdBYXVmJ6bUT_fNK0Nu7qlKa31ZETLLc6Q/exec";
 
-// ----------------------
-// 4. 관객 텍스트 저장 함수
-// ----------------------
+//------------------------------------------------
+// 3. 관객 텍스트 저장 (POST)
+//------------------------------------------------
 window.saveAudienceText = function (kind, mood, text) {
   const payload = { kind, mood, text };
 
@@ -206,9 +201,9 @@ window.saveAudienceText = function (kind, mood, text) {
     });
 };
 
-// ----------------------
-// 5. 랜덤 텍스트 가져오기 함수
-// ----------------------
+//------------------------------------------------
+// 4. 랜덤 텍스트 가져오기 (GET)
+//------------------------------------------------
 window.fetchRandomAudienceText = function (kind, mood, callback) {
   let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
   if (mood) {
@@ -227,30 +222,53 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
     });
 };
 
-// ----------------------
-// 6. 패시지 전환 시: 저장 + 랜덤 텍스트 표시
-// ----------------------
+//------------------------------------------------
+// 5. passage가 끝날 때마다 실행되는 공통 처리
+//------------------------------------------------
 document.addEventListener("twine:passageend", function () {
-  // ① 슬픈 텍스트 저장 (#save-sad 요소가 있는 패시지에서만)
+  console.log(">>> twine:passageend fired");
+
+  // 5-1. 타자기 효과
+  const els = document.querySelectorAll(".typewriter");
+  els.forEach(el => window.typeWriter(el, 35));
+
+  // 5-2. 슬픈 글 저장 (#save-sad 있는 패시지만)
   const saveSadEl = document.querySelector("#save-sad");
-  if (saveSadEl) {
+  if (saveSadEl && window.State && State.variables) {
     const text = State.variables.sadText || "";
-    saveAudienceText("event", "sad", text);
+    if (text && text.trim()) {
+      console.log("save sadText:", text);
+      saveAudienceText("event", "sad", text);
+    }
   }
 
-  // ② 슬픈 이야기 랜덤 표시
-  const sadBox = document.querySelector("#random-sad");
-  if (sadBox) {
-    fetchRandomAudienceText("event", "sad", function (text) {
-      sadBox.textContent = text || "아직 남겨진 슬픈 이야기가 없습니다.";
+  // 5-3. 기쁜 이야기 랜덤 표시
+  const happyBox = document.querySelector("#random-happy");
+  if (happyBox) {
+    console.log("found #random-happy");
+    happyBox.textContent = "음..."; // 기본 문구
+
+    fetchRandomAudienceText("event", "happy", function (text) {
+      console.log("happy text from server:", text);
+      happyBox.textContent =
+        text && text.trim()
+          ? text
+          : "아직 남겨진 기쁜 이야기가 없습니다.";
     });
   }
 
-  // ③ 기쁜 이야기 랜덤 표시
-  const happyBox = document.querySelector("#random-happy");
-  if (happyBox) {
-    fetchRandomAudienceText("event", "happy", function (text) {
-      happyBox.textContent = text || "아직 남겨진 기쁜 이야기가 없습니다.";
+  // 5-4. 슬픈 이야기 랜덤 표시 (있으면)
+  const sadBox = document.querySelector("#random-sad");
+  if (sadBox) {
+    console.log("found #random-sad");
+    sadBox.textContent = "음...";
+
+    fetchRandomAudienceText("event", "sad", function (text) {
+      console.log("sad text from server:", text);
+      sadBox.textContent =
+        text && text.trim()
+          ? text
+          : "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
 });
@@ -336,12 +354,12 @@ saveAudienceText(&quot;word&quot;, &quot;&quot;, 관객이_쓴_텍스트);
 우리를 걱정하며 지켜봐주는
 수많은 관객 앞에 위험천만한 묘기를 선보이는
 서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100">저번에는
-&lt;span id=&quot;random-sad&quot;&gt;이야기를 불러오는 중입니다...&lt;/span&gt;
+&lt;span id=&quot;random-sad&quot;&gt;음...&lt;/span&gt;
 어쩌면 스스로 무너질 수도 있었지만
 저를 도와주는 사람들이 있기에
 버틸 수 있었답니다.
 반대로
-&lt;span id=&quot;random-happy&quot;&gt;이야기를 불러오는 중입니다...&lt;/span&gt;
+&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;
 이런 좋은 일들도 있기 때문에
 모두가 묵묵히 잘 이겨냈다고
 생각이 들기도 해요.
