@@ -127,6 +127,32 @@ tw-passage {
     margin: 0 auto 16px auto;  /* 위 아래 여백 */
     border-radius: 8px;        /* 모서리 살짝 둥글게 (원하지 않으면 지워도 됨) */
 }
+
+/* 슬픈/기쁜 제출 버튼 공통 스타일 */
+#save-sad-btn,
+#save-happy-btn {
+  display: block;          /* 한 줄 전체 차지 */
+  margin: 2em auto;        /* 위아래 여백 + 가운데 정렬 */
+  padding: 0.8em 1.6em;    /* 버튼 안쪽 여백 (크기) */
+  font-size: 1.1rem;       /* 글자 조금 크게 */
+  border-radius: 999px;    /* pill 모양 둥근 버튼 */
+  border: none;
+  background: #f0f0f0;
+}
+
+/* 버튼을 더 넓게 하고 싶으면 */
+#save-sad-btn,
+#save-happy-btn {
+  width: 70%;
+  max-width: 320px;        /* 너무 넓어지지 않게 최대폭 제한 */
+}
+
+tw-hook[name="nextSad"],
+tw-hook[name="nextHappy"] {
+  display: block;
+  text-align: center;
+  margin-top: 1.5em;
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">console.log("DEBUG: Story JavaScript loaded!");
 
 //------------------------------------------------
@@ -287,7 +313,22 @@ function updateRandomBoxesOnce() {
           : "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
-}
+   // 3) 희망 이야기 랜덤 표시
+  const hopeBox = document.querySelector("#random-hope");
+  if (hopeBox && !hopeBox.dataset.loaded) {
+    console.log("found #random-hope, loading text");
+    hopeBox.dataset.loaded = "1";
+    hopeBox.textContent = "음...";  // 기본 문구
+
+    fetchRandomAudienceText("event", "hope", function (text) {
+      console.log("hope text from server:", text);
+      hopeBox.textContent =
+        text && text.trim()
+          ? text
+          : "아직 남겨진 희망의 이야기가 없습니다.";
+    });
+  }
+
 
 // 0.7초마다 화면 검사해서, 해당 span이 등장하면 한 번만 실행
 setInterval(updateRandomBoxesOnce, 700);
@@ -296,38 +337,43 @@ setInterval(updateRandomBoxesOnce, 700);
 // 6. 슬픈/기쁜 이야기 저장 + 연타 방지 + 자동 이동
 //------------------------------------------------
 function handleSave(kindKey) {
-  const isSad = kindKey === "sad";
+  // ID 구성
+  const inputId  = (kindKey === "sad") ? "sad-input"
+                  : (kindKey === "happy") ? "happy-input"
+                  : "hope-input";
 
-  const inputId  = isSad ? "sad-input"        : "happy-input";
-  const btnId    = isSad ? "save-sad-btn"     : "save-happy-btn";
-  const statusId = isSad ? "save-sad-status"  : "save-happy-status";
-  const hookName = isSad ? "nextSad"          : "nextHappy";
+  const btnId    = (kindKey === "sad") ? "save-sad-btn"
+                  : (kindKey === "happy") ? "save-happy-btn"
+                  : "save-hope-btn";
+
+  const statusId = (kindKey === "sad") ? "save-sad-status"
+                  : (kindKey === "happy") ? "save-happy-status"
+                  : "save-hope-status";
+
+  const hookName = (kindKey === "sad") ? "nextSad"
+                  : (kindKey === "happy") ? "nextHappy"
+                  : "nextHope";
 
   const btn = document.getElementById(btnId);
   if (!btn) return;
 
-  // 🔒 이미 전송 중이면 무시 (연타 방지)
-  if (btn.dataset.sending === "1") {
-    console.log("already sending, ignore extra click");
-    return;
-  }
+  // 연타 방지
+  if (btn.dataset.sending === "1") return;
   btn.dataset.sending = "1";
   btn.disabled = true;
 
   const inputEl = document.getElementById(inputId);
   if (!inputEl) {
-    console.error("input element not found:", inputId);
     btn.disabled = false;
     btn.dataset.sending = "";
     return;
   }
 
   const kind = inputEl.dataset.kind || "event";
-  const mood = inputEl.dataset.mood || (isSad ? "sad" : "happy");
-  let text = (inputEl.value || "").trim();
+  const mood = inputEl.dataset.mood || kindKey;
+  const text = (inputEl.value || "").trim();
 
   const statusEl = document.getElementById(statusId);
-
   if (!text) {
     if (statusEl) statusEl.textContent = "내용을 입력해 주세요.";
     btn.disabled = false;
@@ -337,45 +383,27 @@ function handleSave(kindKey) {
 
   if (statusEl) statusEl.textContent = "저장 중입니다...";
 
-  console.log("saving", kind, mood, text);
-
   saveAudienceText(kind, mood, text).then(function (result) {
-    console.log("save result:", result);
-
     if (result && result.status === "ok") {
-      if (statusEl) statusEl.textContent = "저장되었습니다.";
-
-      // ✅ 저장 성공하면 자동으로 '다음으로' 링크 클릭
-      const link = document.querySelector(
-        'tw-hook[name="' + hookName + '"] tw-link'
-      );
-      if (link) {
-        link.click();
-      } else {
-        console.warn("next hook link not found:", hookName);
-      }
+      if (statusEl) statusEl.textContent = "저장되었습니다!";
+      const link = document.querySelector('tw-hook[name="' + hookName + '"] tw-link');
+      if (link) link.click();
     } else {
       if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
       btn.disabled = false;
       btn.dataset.sending = "";
     }
-  }).catch(function (err) {
-    console.error("save error:", err);
-    if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
-    btn.disabled = false;
-    btn.dataset.sending = "";
   });
 }
 
+
 // 슬픈/기쁜 버튼 공통 클릭 리스너
 document.addEventListener("click", function (e) {
-  if (e.target && e.target.id === "save-sad-btn") {
-    handleSave("sad");
-  }
-  if (e.target && e.target.id === "save-happy-btn") {
-    handleSave("happy");
-  }
+  if (e.target && e.target.id === "save-sad-btn") handleSave("sad");
+  if (e.target && e.target.id === "save-happy-btn") handleSave("happy");
+  if (e.target && e.target.id === "save-hope-btn") handleSave("hope");
 });
+
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 [[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
@@ -415,51 +443,47 @@ document.addEventListener("click", function (e) {
 
 |nextSad&gt;[ [[다음으로-&gt;슬픈일_제출]] ]
 
-</tw-passagedata><tw-passagedata pid="7" name="기쁜일_제출" tags="" position="1200,1400" size="100,100">당신의 이야기를 잘 받았습니다.
+</tw-passagedata><tw-passagedata pid="7" name="기쁜일_제출" tags="" position="1200,1400" size="100,100">당신의 이야기를 잘 들었습니다.
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다음&quot;)</tw-passagedata><tw-passagedata pid="8" name="다다다음" tags="" position="1100,1525" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
+(link-goto: &quot;다음으로&quot;, &quot;HAPPY_R&quot;)</tw-passagedata><tw-passagedata pid="8" name="다다다음" tags="" position="1100,1525" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
 슬프게도, 그것은 누구의 잘못도 아니죠.
-다만,
-떨어졌다는 사실만이 분명합니다.
+다만, 떨어졌다는 사실만이 분명합니다.
 그리고 떨어진 이상,
 우리는 이 세계의 무대 위에서
-계속해서 장면을 지나야 합니다.
-
-원하지 않은 세계에서 살아간다
-라는말은
-당신에게 어떻게 들리시나요?
-
-[[다다다다음]]
-</tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1725" size="100,100">어느 날, 저는 정말로 떨어질 뻔 했습니다.
-다리가 떨리고, 손이 미끄러지고,
-세계가 나를 아래로 잡아당기는 순간이 있었죠.
+계속해서 장면들을 지나야 합니다.
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)
+</tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1675" size="100,100">어느 날, 저는 정말로 깊은 곳으로 떨어질 뻔 했습니다.
+발 아래가 비어 버리며, 몸이 기울고,
+숨이 막혀 아무 말도 할 수 없던 순간이었죠.
+그 찰나가 끔찍하게 길게 느껴졌습니다.
 
 그때, 누군가가 나를 붙잡아 주었습니다.
-그 얼굴도 선명하고, 그 손길도 분명했습니다.
 
 그는 아주 조용히, 말했습니다.
-(사전의 마지막 관람자 텍스트)
+&lt;span id=&quot;random-hope&quot;&gt;...&lt;/span&gt;
 
-[[다다다다다음]]</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1850" size="100,100">또 하나의 질문을 더 하고 싶습니다.
-당신은, 이 위험천만한 세계 속에서
-어떤 선택을 할 건가요?
 
-균형을 잡을 것인가,
-잠시 멈출 것인가,
-아니면 다시 올라설 것인가.
+(link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1825" size="100,100">또 하나의 질문을 더 하고 싶습니다.
+당신은 당신의 세계 속에서
+어떤 선택을 하고 계신가요?
 
-이 세계는 언제나
-당신의 한 걸음을 기다리고 있으니까요.
+균형을 잡을지
+잠시 멈출지
+아니면 다시 올라설지
 
-&#39;&#39;지금까지 그리고 앞으로도
+&#39;&#39;그리고 지금까지
+그리고 앞으로도
 당신을 앞으로 나아가게 하는
 문장이 있으신가요?&#39;&#39;
 
-saveAudienceText(&quot;word&quot;, &quot;&quot;, 관객이_쓴_텍스트);
+&lt;textarea id=&quot;hope-input&quot; data-kind=&quot;event&quot; data-mood=&quot;hope&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
 
-[[다다다다다다음]]
+&lt;button id=&quot;save-hope-btn&quot;&gt;제출하기&lt;/button&gt;
+&lt;span id=&quot;save-hope-status&quot;&gt;&lt;/span&gt;
+
+|nextHope&gt;[ [[다음으로-&gt;다다다다다다음]] ]
 </tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1100,1975" size="100,100">우리는 그렇게
 서로의 장면 속에서
 잠시 등장했다 사라지며
@@ -467,11 +491,11 @@ saveAudienceText(&quot;word&quot;, &quot;&quot;, 관객이_쓴_텍스트);
 우리를 걱정하며 지켜봐주는
 수많은 관객 앞에 위험천만한 묘기를 선보이는
 서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100"> &lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;음...&lt;/span&gt;
-어쩌면 스스로 무너질 수도 있었지만&lt;br&gt;
+어쩌면 스스로 무너질 수도 있었지만
 저를 도와주는 사람들이 있기에
-버틸 수 있었답니다.
+버틸 수 있었답니다.&lt;/br&gt;
 반대로
-&lt;p&gt;&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;이런 좋은 일들도 있기 때문에&lt;br&gt;
+&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;이런 좋은 일들도 있기 때문에
 모두가 묵묵히 잘 이겨냈다고
 생각이 들기도 해요.&lt;/p&gt;
 
@@ -484,7 +508,21 @@ saveAudienceText(&quot;word&quot;, &quot;&quot;, 관객이_쓴_텍스트);
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다음&quot;)</tw-passagedata></tw-storydata>
+(link-goto: &quot;다음으로&quot;, &quot;SAD_R&quot;)</tw-passagedata><tw-passagedata pid="15" name="SAD_R" tags="" position="900,1525" size="100,100">흠... 뜻밖의 상실이 찾아오기도 하고,
+오랫동안 마음이 무너질 때도 있습니다.
+하지만 어떤 날들은,
+그 슬픔을 기억하는 마음 자체가
+다시 걸어갈 힘이 되기도 하죠.
+저 역시 좌절한 적이 있습니다.
+
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY_R" tags="" position="1300,1525" size="100,100">뜻 밖의 행운이 찾아올 때도 있고,
+오래 바라던 일이 이루어질 때도 있습니다.
+그리고 어떤 날들은,
+힘든 순간을 견디게 해주는
+작은 기억 하나가 큰 힘이 되기도 하죠.
+당신은 좌절했던 경험이 있으신가요?
+
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
  * https://github.com/paulmillr/es6-shim
