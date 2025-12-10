@@ -229,6 +229,22 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
 //------------------------------------------------
 function updateRandomBoxesOnce() {
    console.log("interval tick");
+  // 0) 슬픈 텍스트 자동 저장 (특정 패시지에 #save-sad-hook가 있을 때)
+  const saveSadHook = document.querySelector("#save-sad-hook");
+  if (saveSadHook && !saveSadHook.dataset.saved) {
+    saveSadHook.dataset.saved = "1";
+
+    let text = "";
+    if (window.State && State.variables && State.variables.sadText) {
+      text = State.variables.sadText.trim();
+    }
+
+    if (text) {
+      console.log("auto-saving sadText:", text);
+      saveAudienceText("event", "sad", text);
+    }
+  }
+  
   // 1) 기쁜 이야기
   const happyBox = document.querySelector("#random-happy");
   if (happyBox && !happyBox.dataset.loaded) {   // 아직 한 번도 안 불러왔을 때만
@@ -265,7 +281,98 @@ function updateRandomBoxesOnce() {
 // 0.7초마다 화면 검사해서, 해당 span이 등장하면 한 번만 실행
 setInterval(updateRandomBoxesOnce, 700);
 
+//------------------------------------------------
+// 6. "제출하기" 버튼 클릭 시 텍스트 저장
+//------------------------------------------------
+document.addEventListener("click", function (e) {
+  // 클릭된 요소가 #save-sad-btn인지 체크
+  if (e.target && e.target.id === "save-sad-btn") {
+    console.log("save-sad-btn clicked");
 
+    // 1) 입력 박스 찾기
+    const inputEl = document.querySelector("#sad-input");
+    if (!inputEl) {
+      console.error("sad-input 요소를 찾지 못했습니다.");
+      return;
+    }
+
+    // 2) kind, mood, text 꺼내기
+    const kind = inputEl.dataset.kind || "event";   // 기본값 event
+    const mood = inputEl.dataset.mood || "sad";     // 기본값 sad
+    let text = "";
+
+    // (A) 그냥 textarea에서 직접 읽는 버전:
+    text = inputEl.value || "";
+
+    // (B) SugarCube 변수 $sadText를 쓰고 있다면, 아래처럼도 가능:
+    // if (window.State && State.variables && State.variables.sadText) {
+    //   text = State.variables.sadText;
+    // }
+
+    text = text.trim();
+    if (!text) {
+      console.log("비어 있는 텍스트는 저장하지 않습니다.");
+      const statusEl = document.querySelector("#save-sad-status");
+      if (statusEl) statusEl.textContent = "내용을 입력해 주세요.";
+      return;
+    }
+
+    console.log("saving text:", kind, mood, text);
+
+    // 3) 실제 저장 호출
+    saveAudienceText(kind, mood, text).then(function (result) {
+      const statusEl = document.querySelector("#save-sad-status");
+      if (result && result.status === "ok") {
+        console.log("text saved successfully");
+        if (statusEl) statusEl.textContent = "저장되었습니다.";
+      } else {
+        console.error("save failed:", result);
+        if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
+      }
+    });
+  }
+});
+
+//------------------------------------------------
+// 7. "기쁜 이야기 제출" 버튼 클릭 시 저장
+//------------------------------------------------
+document.addEventListener("click", function (e) {
+  if (e.target && e.target.id === "save-happy-btn") {
+    console.log("save-happy-btn clicked");
+
+    // 1) 입력 박스 찾기
+    const inputEl = document.querySelector("#happy-input");
+    if (!inputEl) {
+      console.error("happy-input 요소를 찾지 못했습니다.");
+      return;
+    }
+
+    // 2) kind, mood, text 꺼내기
+    const kind = inputEl.dataset.kind || "event";
+    const mood = inputEl.dataset.mood || "happy";
+    let text = inputEl.value.trim();
+
+    if (!text) {
+      const statusEl = document.querySelector("#save-happy-status");
+      if (statusEl) statusEl.textContent = "내용을 입력해 주세요.";
+      return;
+    }
+
+    console.log("saving happy text:", kind, mood, text);
+
+    // 3) 저장
+    saveAudienceText(kind, mood, text).then(function (result) {
+      const statusEl = document.querySelector("#save-happy-status");
+      if (result && result.status === "ok") {
+        console.log("happy text saved successfully");
+        if (statusEl) statusEl.textContent = "저장되었습니다.";
+      } else {
+        console.error("save failed:", result);
+        if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
+      }
+    });
+  }
+});
 
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
@@ -290,13 +397,19 @@ setInterval(updateRandomBoxesOnce, 700);
 
 (link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
 
-(input-box: bind $sadText)
+&lt;textarea id=&quot;happy-input&quot; data-kind=&quot;event&quot; data-mood=&quot;happy&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
 
-(link-goto: &quot;제출하기&quot;, &quot;기쁜일_제출&quot;)</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
+&lt;button id=&quot;save-happy-btn&quot;&gt;제출하기&lt;/button&gt;
+&lt;span id=&quot;save-happy-status&quot;&gt;&lt;/span&gt;
+</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
 
-(input-box: bind $sadText)
+&lt;!-- SugarCube라면 이렇게 변수에 바인딩 --&gt;
+&lt;textarea id=&quot;sad-input&quot; data-kind=&quot;event&quot; data-mood=&quot;sad&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;
 
-(link-goto: &quot;제출하기&quot;, &quot;슬픈일_제출&quot;)
+&lt;/textarea&gt;
+
+&lt;button id=&quot;save-sad-btn&quot;&gt;제출하기&lt;/button&gt;
+&lt;span id=&quot;save-sad-status&quot;&gt;&lt;/span&gt;
 </tw-passagedata><tw-passagedata pid="7" name="기쁜일_제출" tags="" position="1200,1400" size="100,100">당신의 이야기를 잘 받았습니다.
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
