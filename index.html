@@ -183,6 +183,10 @@ tw-hook[name="nextHope"] {
 tw-link {
     display: inline-block !important;
 }
+
+tw-hook[name="nextHope"] {
+  display: none;
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">console.log("DEBUG: Story JavaScript loaded!");
 
 //------------------------------------------------
@@ -344,6 +348,7 @@ function handleSave(kindKey) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
 
+  // 연타 방지
   if (btn.dataset.sending === "1") {
     console.log("already sending, ignore extra click");
     return;
@@ -382,14 +387,29 @@ function handleSave(kindKey) {
     if (result && result.status === "ok") {
       if (statusEl) statusEl.textContent = "저장되었습니다.";
 
-      const link = document.querySelector(
-        'tw-hook[name="' + hookName + '"] tw-link'
-      );
-      if (link) {
-        link.click();
+      // ✅ hope일 때는 자동 이동하지 않고, 숨겨진 '다음으로' 버튼을 보여주기
+      if (hookName === "nextHope") {
+        const hook = document.querySelector(
+          'tw-hook[name="' + hookName + '"]'
+        );
+        if (hook) {
+          hook.style.display = "block";   // CSS에서 display:none 해둔 걸 보이게
+        } else {
+          console.warn("next hook (hope) not found:", hookName);
+        }
       } else {
-        console.warn("next hook link not found:", hookName);
+        // sad / happy는 기존처럼 자동으로 다음으로 넘어가게 유지
+        const link = document.querySelector(
+          'tw-hook[name="' + hookName + '"] tw-link'
+        );
+        if (link) {
+          link.click();
+        } else {
+          console.warn("next hook link not found:", hookName);
+        }
       }
+
+      // hope든 sad/happy든, 성공 후 버튼은 그대로 disabled 상태 유지
     } else {
       if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
       btn.disabled = false;
@@ -415,6 +435,7 @@ document.addEventListener("click", function (e) {
     handleSave("hope");
   }
 });
+
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 
@@ -498,8 +519,9 @@ document.addEventListener("click", function (e) {
     cols=&quot;40&quot;
     placeholder=&quot;당신은 어떤 문장으로 힘을 얻으시나요?&quot;&gt;
 &lt;/textarea&gt;
+
 &lt;button id=&quot;save-hope-btn&quot;&gt;제출하기&lt;/button&gt;
-&lt;span id=&quot;save-hope-status&quot;&gt;
+&lt;span id=&quot;save-hope-status&quot;&gt;&lt;/span&gt;
 
 |nextHope&gt;[ [[다음으로-&gt;LAST]] ]
 </tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1175,2250" size="100,100">짧은 시간이었지만 대화할 수 있어서 좋았습니다.
