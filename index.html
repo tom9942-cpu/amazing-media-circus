@@ -15,6 +15,10 @@
 /* 2) 전체 스토리 폰트를 Pretendard로 설정 */
 tw-story {
     font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #ffffff !important;  /* 배경 흰색 */
+    max-width: 480px;   /* 폰 폭 기준 */
+    margin: 0 auto;
+    padding: 16px;
 }
 
 /* 3) Harlowe 사이드바(되돌리기/다시하기 아이콘) 숨기기 */
@@ -22,7 +26,7 @@ tw-sidebar tw-icon {
     display: none !important;
 }
 
-/* PC 기본 위치: 오른쪽 아래 */
+/* (예전에 쓰던 BGM 오디오 위치 – 지금 BGM 안 쓰면 없어도 됨) */
 #bgm-audio {
     position: fixed;
     bottom: 10px;
@@ -30,7 +34,6 @@ tw-sidebar tw-icon {
     z-index: 9999;
 }
 
-/* 📱 모바일(화면이 좁을 때)은 아래 중앙에 크게 보여주기 */
 @media (max-width: 768px) {
     #bgm-audio {
         bottom: 8px;
@@ -42,24 +45,33 @@ tw-sidebar tw-icon {
     }
 }
 
-
-/* 4) 타자기 효과용 공통 스타일 */
-.typewriter {
-    white-space: pre-wrap;
-    display: inline-block;
-}
-
-tw-story {
-    max-width: 480px;   /* 폰 폭 기준 */
-    margin: 0 auto;     /* 가운데 정렬 */
-    padding: 16px;      /* 양옆 여백 */
-}
-
+/* 기본 텍스트 스타일 */
 tw-passage {
-    font-size: 16px;    /* 기본 폰 크기 */
-    line-height: 1.6;   /* 줄 간격 */
+    color: #000000 !important;
+    font-size: 18px !important;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+
+    /* ✅ 여기 수정: 세로 가운데 정렬 → 위에서부터 정렬 */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;      /* ← center 였던 것 변경 */
+    align-items: center;
+    min-height: 100vh !important;
+    padding-top: 15vh;                /* 화면 위에서 살짝 내려오게 */
 }
 
+/* 링크 */
+tw-link {
+    color: #000000 !important;
+}
+tw-link:hover {
+    text-decoration: underline;
+}
+
+/* 선택지 스타일 (필요한 패시지에서 사용) */
 .choice-link {
     display: block;
     padding: 10px 14px;
@@ -70,145 +82,80 @@ tw-passage {
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(8px);
 }
-
-/* 터치 시 시각적 피드백 */
 .choice-link:active {
     transform: scale(0.97);
     opacity: 0.8;
 }
 
+/* 입력창 */
 tw-passage input,
 tw-passage textarea {
-    font-size: 16px;      /* 키보드/입력과 잘 맞게 */
+    font-size: 16px;
     padding: 8px 10px;
     border-radius: 6px;
 }
 
-/* 전체 배경 흰색 */
-tw-story {
-    background-color: #ffffff !important;
-}
-
-/* 글씨를 검정색으로 */
-tw-passage {
-    color: #000000 !important;
-}
-
-tw-link {
-    color: #000000 !important;
-}
-tw-link:hover {
-    text-decoration: underline;
-}
-
-tw-passage {
-    font-size: 18px !important;
-    line-height: 1.7;
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-/* 화면 전체를 flex 컨테이너로 만들고, 가운데 정렬 */
-tw-passage {
-    display: flex;
-    flex-direction: column;     /* 세로 배치 */
-    justify-content: center;    /* 세로 중앙 정렬 */
-    align-items: center;        /* 가로 중앙 정렬 */
-
-    min-height: 100vh !important;  /* 화면 높이 전체 사용 */
-    text-align: center;  
-}
-
+/* 이미지 */
 .page-image {
     display: block;
     max-width: 100%;
     height: auto;
-    margin: 0 auto 16px auto;  /* 위 아래 여백 */
-    border-radius: 8px;        /* 모서리 살짝 둥글게 (원하지 않으면 지워도 됨) */
+    margin: 0 auto 16px auto;
+    border-radius: 8px;
 }
 
 /* 슬픈/기쁜 제출 버튼 공통 스타일 */
 #save-sad-btn,
-#save-happy-btn {
-  display: block;          /* 한 줄 전체 차지 */
-  margin: 2em auto;        /* 위아래 여백 + 가운데 정렬 */
-  padding: 0.8em 1.6em;    /* 버튼 안쪽 여백 (크기) */
-  font-size: 1.1rem;       /* 글자 조금 크게 */
-  border-radius: 999px;    /* pill 모양 둥근 버튼 */
-  border: none;
-  background: #f0f0f0;
+#save-happy-btn,
+#save-hope-btn {
+    display: block;
+    margin: 2em auto;
+    padding: 0.8em 1.6em;
+    font-size: 1.1rem;
+    border-radius: 999px;
+    border: none;
+    background: #f0f0f0;
+    width: 70%;
+    max-width: 320px;
 }
 
-/* 버튼을 더 넓게 하고 싶으면 */
-#save-sad-btn,
-#save-happy-btn {
-  width: 70%;
-  max-width: 320px;        /* 너무 넓어지지 않게 최대폭 제한 */
-}
-
+/* 다음으로 링크가 들어 있는 hook 위치 */
 tw-hook[name="nextSad"],
-tw-hook[name="nextHappy"] {
-  display: block;
-  text-align: center;
-  margin-top: 1.5em;
+tw-hook[name="nextHappy"],
+tw-hook[name="nextHope"] {
+    display: block;
+    text-align: center;
+    margin-top: 1.5em;
+}
+
+/* 디졸브 효과 */
+.fadein {
+  opacity: 0;
+  transition: opacity 4s ease;
+}
+.fadein.show {
+  opacity: 1;
+}
+
+/* ✅ 타자기용 클래스는 이제 안 쓰므로 제거함
+.typewriter { ... }
+*/
+
+.choice-row {
+  white-space: nowrap;          /* 줄바꿈 금지 */
+}
+.choice-row tw-link {
+  margin: 0 0.8rem;             /* 둘 사이 간격 */
 }
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">console.log("DEBUG: Story JavaScript loaded!");
 
 //------------------------------------------------
-// 0. BGM 설정
-//------------------------------------------------
-(function () {
-  function setupBGM() {
-    if (document.getElementById("bgm-audio")) return;
-
-    var audio = document.createElement("audio");
-    audio.id = "bgm-audio";
-    audio.src = "bgm.mp3";   // 파일 이름은 상황에 맞게
-    audio.loop = true;
-    audio.volume = 0.4;
-    audio.autoplay = true;
-    audio.controls = true;
-
-    audio.play().catch(function (e) {
-      console.log("자동 재생이 차단됨:", e);
-    });
-
-    document.body.appendChild(audio);
-  }
-
-  if (document.readyState === "loading") {
-    window.addEventListener("DOMContentLoaded", setupBGM);
-  } else {
-    setupBGM();
-  }
-})();
-
-//------------------------------------------------
-// 1. 타자기 효과
-//------------------------------------------------
-window.typeWriter = function (element, speed = 35) {
-  const text = element.textContent;
-  element.textContent = "";
-  let i = 0;
-
-  function typing() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(typing, speed);
-    }
-  }
-  typing();
-};
-
-//------------------------------------------------
-// 2. 구글 웹앱 URL
+// 1. 구글 웹앱 URL
 //------------------------------------------------
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9puiYlxqptE9pIzwm67b7uULm3087EJUaggWgL6eFs-NMuVvL3JtkrUy2ujBNZzAe/exec";
 
 //------------------------------------------------
-// 3. 관객 텍스트 저장 (POST, x-www-form-urlencoded)
+// 2. 관객 텍스트 저장 (POST, x-www-form-urlencoded)
 //------------------------------------------------
 window.saveAudienceText = function (kind, mood, text) {
   const body =
@@ -240,7 +187,7 @@ window.saveAudienceText = function (kind, mood, text) {
 };
 
 //------------------------------------------------
-// 4. 랜덤 텍스트 가져오기 (GET)
+// 3. 랜덤 텍스트 가져오기 (GET)
 //------------------------------------------------
 window.fetchRandomAudienceText = function (kind, mood, callback) {
   let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
@@ -261,7 +208,7 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
 };
 
 //------------------------------------------------
-// 5. 랜덤 박스 감시해서 내용 채우기 + 슬픈 자동 저장
+// 4. 랜덤 박스 감시해서 내용 채우기 + 슬픈 자동 저장
 //------------------------------------------------
 function updateRandomBoxesOnce() {
   console.log("interval tick");
@@ -293,8 +240,8 @@ function updateRandomBoxesOnce() {
       console.log("happy text from server:", text);
       happyBox.textContent =
         text && text.trim()
-		? '“' + text.trim() + '”'
-  		: "아직 남겨진 기쁜 이야기가 없습니다.";
+          ? '“' + text.trim() + '”'
+          : "아직 남겨진 기쁜 이야기가 없습니다.";
     });
   }
 
@@ -309,8 +256,8 @@ function updateRandomBoxesOnce() {
       console.log("sad text from server:", text);
       sadBox.textContent =
         text && text.trim()
-		? '“' + text.trim() + '”'
-    	: "아직 남겨진 슬픈 이야기가 없습니다.";
+          ? '“' + text.trim() + '”'
+          : "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
 
@@ -325,8 +272,8 @@ function updateRandomBoxesOnce() {
       console.log("hope text from server:", text);
       hopeBox.textContent =
         text && text.trim()
-    	? '“' + text.trim() + '”'
-    	: "아직 남겨진 희망의 이야기가 없습니다.";
+          ? '“' + text.trim() + '”'
+          : "아직 남겨진 희망의 이야기가 없습니다.";
     });
   }
 }
@@ -335,7 +282,7 @@ function updateRandomBoxesOnce() {
 setInterval(updateRandomBoxesOnce, 700);
 
 //------------------------------------------------
-// 6. 슬픈/기쁜/희망 이야기 저장 + 연타 방지 + 자동 이동
+// 5. 슬픈/기쁜/희망 이야기 저장 + 연타 방지 + 자동 이동
 //------------------------------------------------
 function handleSave(kindKey) {
   const inputId  =
@@ -434,9 +381,10 @@ document.addEventListener("click", function (e) {
 });
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
+
 [[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
-흘러가는대로 살다보니
-저는 이 화면 안에 떨어지게 되었고, 
+살아오며 흐르는 대로 걸어오다 보니,
+저는 어느새 이 화면 안에 떨어지게 되었고, 
 당신을 마주치게 되었네요.
 
 (link-goto: &quot;다음으로&quot;, &quot;다음&quot;)</tw-passagedata><tw-passagedata pid="3" name="다음" tags="" position="1100,750" size="100,100">저는 대화를 좋아해요.
@@ -450,10 +398,10 @@ document.addEventListener("click", function (e) {
 조언을 얻거나
 위로를 듣거나
 축하를 받지 않으신가요?
-저는 새삼 살아있음을 느낀적이
-타인의 반응이기도 해요.
+저는 살아 있음을 새삼 느낀 순간들이
+바로 이런 타인의 반응에서 오기도 했어요.
 
-(link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
+(link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?&lt;/span&gt;
 
 &lt;textarea id=&quot;happy-input&quot; data-kind=&quot;event&quot; data-mood=&quot;happy&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
 
@@ -462,7 +410,7 @@ document.addEventListener("click", function (e) {
 
 |nextHappy&gt;[ [[다음으로-&gt;기쁜일_제출]] ]
 
-</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
+</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?&lt;/span&gt;
 
 &lt;textarea id=&quot;sad-input&quot; data-kind=&quot;event&quot; data-mood=&quot;sad&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
 
@@ -484,74 +432,78 @@ document.addEventListener("click", function (e) {
 (link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)
 </tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1675" size="100,100">어느 날, 저는 정말로 깊은 곳으로 떨어질 뻔 했습니다.
 발 아래가 비어 버리며, 몸이 기울고,
-숨이 막혀 아무 말도 할 수 없던 순간이었죠.
+숨이 막히고 울렁거리는 순간들이죠.
 그 찰나가 끔찍하게 길게 느껴졌습니다.
 
 그때, 누군가가 나를 붙잡아 주었습니다.
 
 그는 아주 조용히, 말했습니다.
-&lt;span id=&quot;random-hope&quot;&gt;기억해 내는 중...&lt;/span&gt;
+&lt;span id=&quot;random-hope&quot;&gt;기억해 내는 중...
 
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1825" size="100,100">또 하나의 질문을 더 하고 싶습니다.
-당신은 당신의 세계 속에서
-어떤 선택을 하고 계신가요?
-
-균형을 잡을지
-잠시 멈출지
-아니면 다시 올라설지
-
-&#39;&#39;그리고 지금까지
-그리고 앞으로도
+(link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1825" size="100,100">당신의 세계 속에서
+어떤 선택을 하고 계실지 궁금합니다.
+그리고 그 선택을 내릴 수 있는
+&#39;&#39;지금까지 그리고 앞으로도
 당신을 앞으로 나아가게 하는
 문장이 있으신가요?&#39;&#39;
 
 &lt;textarea id=&quot;hope-input&quot; data-kind=&quot;event&quot; data-mood=&quot;hope&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
 
 &lt;button id=&quot;save-hope-btn&quot;&gt;제출하기&lt;/button&gt;
-&lt;span id=&quot;save-hope-status&quot;&gt;&lt;/span&gt;
+&lt;span id=&quot;save-hope-status&quot;&gt;
 
-|nextHope&gt;[ [[다음으로-&gt;다다다다다다음]] ]
-</tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1100,1975" size="100,100">우리는 그렇게
-서로의 장면 속에서
-잠시 등장했다 사라지며
-다음 사람에게 작은 빛을 남깁니다.
-우리를 걱정하며 지켜봐주는
-수많은 관객 앞에 위험천만한 묘기를 선보이는
-서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100"> &lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;잠시만 기다려주세요...&lt;/span&gt;
-이 일로 스스로 무너질 수도 있었지만
-저를 도와주는 사람들이 있기에
-버틸 수 있었답니다.&lt;/br&gt;
+|nextHope&gt;[ [[다음으로-&gt;LAST]] ]
+</tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1125,2125" size="100,100">짧은 시간이었지만 대화할 수 있어서 좋았습니다.
+이 대화로 당신이 누구인지 어떤 분이신지 알 수는 없지만
+저에게 들려줬던 이야기를 기억하겠습니다.
+과거의 일들이 당신을 만들었듯
+남은 길 역시 멋있게 써 내려갈 수 있기를
+&lt;p id=&quot;cheer&quot; class=&quot;fadein&quot;&gt;&#39;&#39;응원할게요&#39;&#39;&lt;/p&gt;
+
+&lt;script&gt;
+  // 약간의 딜레이 후 페이드인
+  setTimeout(() =&gt; {
+    document.getElementById(&quot;cheer&quot;).classList.add(&quot;show&quot;);
+  }, 300); 
+&lt;/script&gt;</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100">&lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;잠시만 기다려주세요...&lt;/span&gt;
+이 일로 기분이 좋지 않고, 우울했지만&lt;/br&gt;
 반대로
-&lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;
+&lt;span id=&quot;random-happy&quot;&gt;음...
  이런 좋은 일들도 있기 때문에
-묵묵히 잘 이겨냈다고
-생각이 들기도 해요.&lt;/p&gt;
+우울한 순간들도 잘 이겨냈다는
+생각이 들기도 해요.&lt;/span&gt;
 
 (link-goto: &quot;다음으로&quot;, &quot;NEXTT&quot;)
-</tw-passagedata><tw-passagedata pid="13" name="NEXTT" tags="" position="1100,1150" size="100,100">당신은 어떤 일이 있으셨나요?
+</tw-passagedata><tw-passagedata pid="13" name="NEXTT" tags="" position="1100,1150" size="100,100">당신은 요즘 어떠신가요?
+이야기를 짧게나마 들려주실 수 있나요?
 
+&lt;span class=&quot;choice-row&quot;&gt;
 (link-goto: &quot;기쁜 일&quot;, &quot;기쁜 일?&quot;)
 (link-goto: &quot;슬픈 일&quot;, &quot;슬픈 일?&quot;)
+&lt;/span&gt;
 </tw-passagedata><tw-passagedata pid="14" name="슬픈일_제출" tags="" position="975,1400" size="100,100">당신의 이야기를 잘 받았습니다.
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
 
-(link-goto: &quot;다음으로&quot;, &quot;SAD&quot;)</tw-passagedata><tw-passagedata pid="15" name="SAD" tags="" position="900,1525" size="100,100">흠... 뜻밖의 상실이 찾아오기도 하고,
-오랫동안 마음이 무너질 때도 있습니다.
-하지만 어떤 날들은,
+(link-goto: &quot;다음으로&quot;, &quot;SAD&quot;)</tw-passagedata><tw-passagedata pid="15" name="SAD" tags="" position="900,1525" size="100,100">뜻밖의 상실이 찾아오기도 하고,
+오랫동안 마음이 무너질 때도 있죠.
+하지만 어떤 날들은
 그 슬픔을 기억하는 마음 자체가
 다시 걸어갈 힘이 되기도 하죠.
-저 역시 좌절한 적이 있습니다.
+저도 좌절한 적이 있어요.
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY" tags="" position="1300,1525" size="100,100">뜻 밖의 행운이 찾아올 때도 있고,
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY" tags="" position="1300,1525" size="100,100">그렇죠. 삶을 살다보면
+뜻 밖의 행운이 찾아올 때도 있고,
 오래 바라던 일이 이루어질 때도 있습니다.
-그리고 어떤 날들은,
-힘든 순간을 견디게 해주는
+그리고 힘든 순간을 견디게 해주는
 작은 기억 하나가 큰 힘이 되기도 하죠.
 당신은 좌절했던 경험이 있으신가요?
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="17" name="LAST" tags="" position="1100,1975" size="100,100">그 문장은 분명 당혹스러운 순간들로부터 당신을 지켜주었겠죠.
+짧은 글귀에서 신념이 보이기도 합니다.
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata></tw-storydata>
+(link-goto: &quot;다음으로&quot;, &quot;다다다다다다음&quot;)
+</tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
  * https://github.com/paulmillr/es6-shim
