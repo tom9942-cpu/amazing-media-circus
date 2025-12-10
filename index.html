@@ -33,7 +33,6 @@ tw-sidebar tw-icon {
     right: 10px;
     z-index: 9999;
 }
-
 @media (max-width: 768px) {
     #bgm-audio {
         bottom: 8px;
@@ -54,10 +53,9 @@ tw-passage {
     margin: 0 auto;
     text-align: center;
 
-    /* ✅ 여기 수정: 세로 가운데 정렬 → 위에서부터 정렬 */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;      /* ← center 였던 것 변경 */
+    justify-content: flex-start;      /* 위에서부터 정렬 */
     align-items: center;
     min-height: 100vh !important;
     padding-top: 15vh;                /* 화면 위에서 살짝 내려오게 */
@@ -66,6 +64,7 @@ tw-passage {
 /* 링크 */
 tw-link {
     color: #000000 !important;
+    display: inline-block !important;   /* 문장 옆에 자연스럽게 붙도록 */
 }
 tw-link:hover {
     text-decoration: underline;
@@ -87,7 +86,7 @@ tw-link:hover {
     opacity: 0.8;
 }
 
-/* 입력창 */
+/* 입력창 공통 스타일 */
 tw-passage input,
 tw-passage textarea {
     font-size: 16px;
@@ -104,7 +103,7 @@ tw-passage textarea {
     border-radius: 8px;
 }
 
-/* 슬픈/기쁜 제출 버튼 공통 스타일 */
+/* 슬픈/기쁜/희망 제출 버튼 공통 스타일 */
 #save-sad-btn,
 #save-happy-btn,
 #save-hope-btn {
@@ -137,15 +136,12 @@ tw-hook[name="nextHope"] {
   opacity: 1;
 }
 
-/* ✅ 타자기용 클래스는 이제 안 쓰므로 제거함
-.typewriter { ... }
-*/
-
+/* 기쁜/슬픈/희망 이야기 선택지 한 줄에 붙이고 싶을 때 사용 */
 .choice-row {
-  white-space: nowrap;          /* 줄바꿈 금지 */
+  white-space: nowrap;
 }
 .choice-row tw-link {
-  margin: 0 0.8rem;             /* 둘 사이 간격 */
+  margin: 0 0.8rem;
 }
 
 /* 기쁜/슬픈/희망 이야기 입력칸을 눈에 잘 보이게 */
@@ -156,34 +152,33 @@ tw-hook[name="nextHope"] {
   max-width: 100%;
   box-sizing: border-box;
 
-  min-height: 7em;              /* 세로 높이 확보 (5줄 정도 느낌) */
+  min-height: 7em;              /* 세로 높이 확보 */
   padding: 10px 12px;
 
   border: 2px solid #000000;    /* 진한 검은 테두리 */
   border-radius: 8px;
-  background-color: #ffffff;    /* 흰 배경 고정 */
+  background-color: #ffffff;
   color: #000000;
   font-size: 16px;
 }
 
+/* 볼드 강조용 (한 줄 튐 방지) */
 .inline-bold {
-  font-weight: 700;     /* 굵게 */
-  line-height: 1em;     /* 줄 높이 고정 */
-  display: inline-block; /* inline-block으로 레이아웃 안정화 */
+  font-weight: 700;
+  line-height: 1em;
+  display: inline-block;
 }
 
+/* 랜덤 문장 볼드 + 줄 튐 방지 */
 #random-sad,
 #random-happy,
 #random-hope {
-  font-weight: 700;        /* 굵게 */
-  display: inline-block;   /* 줄튀는 문제 방지 */
-  line-height: 1.2em;      /* 웬만하면 줄높이 안정화 */
+  font-weight: 700;
+  display: inline-block;
+  line-height: 1.2em;
 }
 
-tw-link {
-    display: inline-block !important;
-}
-
+/* hope의 '다음으로'는 처음엔 숨겨두고, JS에서 저장 성공 후 보여줌 */
 tw-hook[name="nextHope"] {
   display: none;
 }
@@ -248,12 +243,12 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
 };
 
 //------------------------------------------------
-// 4. 랜덤 박스 감시해서 내용 채우기 + 슬픈 자동 저장
+// 4. 랜덤 박스 감시해서 내용 채우기 + (옵션) 슬픈 자동 저장
 //------------------------------------------------
 function updateRandomBoxesOnce() {
   console.log("interval tick");
 
-  // 0) 슬픈 텍스트 자동 저장 (특정 패시지에 #save-sad-hook가 있을 때)
+  // 0) 슬픈 텍스트 자동 저장 (특정 패시지에 #save-sad-hook가 있을 때만 작동)
   const saveSadHook = document.querySelector("#save-sad-hook");
   if (saveSadHook && !saveSadHook.dataset.saved) {
     saveSadHook.dataset.saved = "1";
@@ -322,7 +317,7 @@ function updateRandomBoxesOnce() {
 setInterval(updateRandomBoxesOnce, 700);
 
 //------------------------------------------------
-// 5. 슬픈/기쁜/희망 이야기 저장 + 연타 방지 + 자동 이동
+// 5. 슬픈/기쁜/희망 이야기 저장 + 연타 방지
 //------------------------------------------------
 function handleSave(kindKey) {
   const inputId  =
@@ -387,18 +382,19 @@ function handleSave(kindKey) {
     if (result && result.status === "ok") {
       if (statusEl) statusEl.textContent = "저장되었습니다.";
 
-      // ✅ hope일 때는 자동 이동하지 않고, 숨겨진 '다음으로' 버튼을 보여주기
+      // ✅ hope: 저장 후 '다음으로' 버튼이 나타나기만 하고, 자동 이동은 하지 않음
       if (hookName === "nextHope") {
         const hook = document.querySelector(
           'tw-hook[name="' + hookName + '"]'
         );
         if (hook) {
-          hook.style.display = "block";   // CSS에서 display:none 해둔 걸 보이게
+          hook.style.display = "block";   // CSS에서 display:none 되어 있던 걸 보이게
         } else {
           console.warn("next hook (hope) not found:", hookName);
         }
+        // hope는 여기서 끝. 버튼은 그대로 disabled 유지 (연타 방지)
       } else {
-        // sad / happy는 기존처럼 자동으로 다음으로 넘어가게 유지
+        // sad / happy: 기존처럼 자동으로 다음 패시지로 이동
         const link = document.querySelector(
           'tw-hook[name="' + hookName + '"] tw-link'
         );
@@ -408,8 +404,6 @@ function handleSave(kindKey) {
           console.warn("next hook link not found:", hookName);
         }
       }
-
-      // hope든 sad/happy든, 성공 후 버튼은 그대로 disabled 상태 유지
     } else {
       if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
       btn.disabled = false;
@@ -435,7 +429,6 @@ document.addEventListener("click", function (e) {
     handleSave("hope");
   }
 });
-
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 
@@ -472,23 +465,21 @@ document.addEventListener("click", function (e) {
 
 |nextHappy&gt;[ [[다음으로-&gt;기쁜일_제출]] ]
 
-</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기해 주시겠어요?&lt;/span&gt;
+</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기해 주시겠어요?
 
 &lt;textarea
-    id=&quot;happy-input&quot;
+    id=&quot;sad-input&quot;
     data-kind=&quot;event&quot;
     data-mood=&quot;sad&quot;
     rows=&quot;5&quot;
     cols=&quot;40&quot;
-    placeholder=&quot;요즘 당신을 슬프게 한 일을 적어주세요.&quot;&gt;
+    placeholder=&quot;요즘 당신을 슬프게 한 일을 적어주세요?&quot;&gt;
 &lt;/textarea&gt;
-
 
 &lt;button id=&quot;save-sad-btn&quot;&gt;제출하기&lt;/button&gt;
 &lt;span id=&quot;save-sad-status&quot;&gt;&lt;/span&gt;
 
 |nextSad&gt;[ [[다음으로-&gt;슬픈일_제출]] ]
-
 </tw-passagedata><tw-passagedata pid="7" name="기쁜일_제출" tags="" position="1200,1400" size="100,100">당신의 이야기를 잘 들었습니다.
 
 &lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
