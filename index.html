@@ -228,6 +228,7 @@ window.fetchRandomAudienceText = function (kind, mood, callback) {
 // 5. 랜덤 박스 감시해서 내용 채우기 (형식 상관 없음 버전)
 //------------------------------------------------
 function updateRandomBoxesOnce() {
+   console.log("interval tick");
   // 1) 기쁜 이야기
   const happyBox = document.querySelector("#random-happy");
   if (happyBox && !happyBox.dataset.loaded) {   // 아직 한 번도 안 불러왔을 때만
@@ -263,6 +264,8 @@ function updateRandomBoxesOnce() {
 
 // 0.7초마다 화면 검사해서, 해당 span이 등장하면 한 번만 실행
 setInterval(updateRandomBoxesOnce, 700);
+
+
 
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
