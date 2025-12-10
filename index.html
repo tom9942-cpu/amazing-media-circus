@@ -102,7 +102,7 @@ tw-link:hover {
 }
 
 tw-passage {
-    font-size: 25px !important;
+    font-size: 18px !important;
     line-height: 1.7;
     max-width: 600px;
     margin: 0 auto;
@@ -183,44 +183,192 @@ document.addEventListener("twine:passageend", function () {
   }
 })();
 
-</script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">안녕하세요.
-우측 아래에 BGM도 있습니다.
+// ★ 구글 Apps Script 웹 앱 URL
+const WEB_APP_URL = "여기에_웹앱_URL_붙여넣기";
 
-[[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">흘러가는대로 살다보니
-가끔 원한 적 없던 무대 위에 서 있기도 합니다.
-조명은 뜨겁고, 박수는 낯설고,
-준비되지 않은 채 이곳에 올려졌습니다.
-당신은 이 세계에 처음 떨어졌을 때 어떤 기분이 들었나요?
+// 텍스트 하나 저장 (kind, mood, text)
+window.saveAudienceText = function(kind, mood, text) {
+  const payload = { kind, mood, text };
 
-[[다음]]</tw-passagedata><tw-passagedata pid="3" name="다음" tags="" position="1100,750" size="100,100">사실 저는 &#39;&#39;삶은 서커스와 닮았다&#39;&#39;고 생각이 들곤 합니다.
-계속해서 해프닝이 벌어지고
-어디선가는 균형을 잃고
-예상할 수 없는 위험들이
-날아옵니다.
+  return fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).then(res => res.json())
+    .then(data => {
+      console.log("saved:", data);
+      return data;
+    }).catch(err => {
+      console.error("saveAudienceText error:", err);
+      return { status: 'error', error: err };
+    });
+};
 
-[[다다음]]</tw-passagedata><tw-passagedata pid="4" name="다다음" tags="" position="1100,875" size="100,100">준비된 사람만 공연에 오르는 것이 아닌
-누구도 원치 않았지만
-우리 모두가 무대위에 서있습니다.
-당신은 최근 어떤 일이 있으셨나요?
-[[기쁜 일?]] [[슬픈 일?]]</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1225,1000" size="100,100">기쁘다면 어떤 일이신지 이야기 해주실 수 있을까요?
+// 랜덤 텍스트 하나 가져오기
+// kind만 쓰거나, kind + mood까지 넣어서 호출 가능
+window.fetchRandomAudienceText = function(kind, mood, callback) {
+  let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
+  if (mood) {
+    url += "&mood=" + encodeURIComponent(mood);
+  }
 
-(텍스트 입력2)
-[[기쁨1]]</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1000" size="100,100">슬프다면 어떤 일이신지 이야기 해주실 수 있을까요?
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      console.log("random text:", data.text);
+      if (callback) callback(data.text || "");
+    })
+    .catch(err => {
+      console.error("fetchRandomAudienceText error:", err);
+      if (callback) callback("");
+    });
+};
 
-(텍스트 입력1)
-[[슬픔1]]</tw-passagedata><tw-passagedata pid="7" name="슬픔1" tags="" position="875,1125" size="100,100">그렇군요. 저는 이런 일이 있었습니다.
+// 관객 텍스트 저장 함수 (이미 만들어둔 거)
+window.saveAudienceText = function(kind, mood, text) {
+  const payload = { kind, mood, text };
 
-(사전의 슬픔 관람자 텍스트)
+  return fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).then(res => res.json())
+    .then(data => {
+      console.log("saved:", data);
+      return data;
+    }).catch(err => {
+      console.error("saveAudienceText error:", err);
+      return { status: 'error', error: err };
+    });
+};
 
-[[다다다음]]
-</tw-passagedata><tw-passagedata pid="8" name="기쁨1" tags="" position="1350,1125" size="100,100">그렇군요. 저는 이런 일이 있었습니다.
+// 패시지 전환될 때마다 검사
+document.addEventListener("twine:passageend", function () {
+    // 슬픈일 제출 패시지에 들어왔을 때만 저장
+    const saveSadEl = document.querySelector("#save-sad");
+    if (saveSadEl) {
+        const text = State.variables.sadText || "";
+        saveAudienceText("event", "sad", text);
+    }
+});
 
-(사전의 기쁨 관람자 텍스트)
+// 랜덤 텍스트 하나를 가져오는 엔드포인트 (GET)
+// 예: ?kind=event&mood=sad  또는 ?kind=event&mood=happy
+function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: 'error', message: 'Sheet not found: ' + SHEET_NAME })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
 
-그리고 가끔은 이런 행복이 사라질 수도 있다는 생각에
-두려워지기도 합니다.
+  const kind = (e.parameter.kind || '').toString();   // 'event' or 'word' ...
+  const mood = (e.parameter.mood || '').toString();   // 'sad' / 'happy' / ''
 
-[[다다다음]]</tw-passagedata><tw-passagedata pid="9" name="다다다음" tags="" position="1100,1300" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ text: '' })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 4).getValues(); // A~D (timestamp, kind, mood, text)
+
+  const texts = values
+    .filter(row => {
+      const rowKind = (row[1] || '').toString();
+      const rowMood = (row[2] || '').toString();
+      if (kind && rowKind !== kind) return false;
+      if (mood && rowMood !== mood) return false;
+      return (row[3] || '').toString().trim() !== '';
+    })
+    .map(row => (row[3] || '').toString().trim());
+
+  let randomText = '';
+  if (texts.length > 0) {
+    const idx = Math.floor(Math.random() * texts.length);
+    randomText = texts[idx];
+  }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ text: randomText })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ★ 구글 웹앱 URL (이미 쓰고 있는 그 주소)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLmK4Cf8QFbbTSZHEWlNplr_wA3paRXpDQmdBYXVmJ6bUT_fNK0Nu7qlKa31ZETLLc6Q/exec";
+
+// 랜덤 텍스트 가져오기 (kind, mood 기준)
+window.fetchRandomAudienceText = function(kind, mood, callback) {
+  let url = WEB_APP_URL + "?kind=" + encodeURIComponent(kind || "");
+  if (mood) {
+    url += "&mood=" + encodeURIComponent(mood);
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      console.log("random text:", data.text);
+      if (callback) callback(data.text || "");
+    })
+    .catch(err => {
+      console.error("fetchRandomAudienceText error:", err);
+      if (callback) callback("");
+    });
+};
+
+document.addEventListener("twine:passageend", function () {
+  // 슬픈 이야기 랜덤 표시
+  const sadBox = document.querySelector("#random-sad");
+  if (sadBox) {
+    fetchRandomAudienceText("event", "sad", function(text) {
+      sadBox.textContent = text || "아직 남겨진 슬픈 이야기가 없습니다.";
+    });
+  }
+
+  // 기쁜 이야기 랜덤 표시
+  const happyBox = document.querySelector("#random-happy");
+  if (happyBox) {
+    fetchRandomAudienceText("event", "happy", function(text) {
+      happyBox.textContent = text || "아직 남겨진 기쁜 이야기가 없습니다.";
+    });
+  }
+});
+</script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
+
+[[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
+흘러가는대로 살다보니
+저는 이 화면 안에 떨어지게 되었고, 
+당신을 마주치게 되었네요.
+
+(link-goto: &quot;다음으로&quot;, &quot;다음&quot;)</tw-passagedata><tw-passagedata pid="3" name="다음" tags="" position="1100,750" size="100,100">저는 대화를 좋아해요.
+당신이 꾸려 온 세계.
+그리고 내가 이어가는 세계.
+서로 다른 이야기를 듣다보면
+이 세상에 대해 더 알아가는 기분이 들어요.
+
+(link-goto: &quot;다음으로&quot;, &quot;다다음&quot;)</tw-passagedata><tw-passagedata pid="4" name="다다음" tags="" position="1100,875" size="100,100">당신에게 어떤 일이 생겼을 때,
+지인에게 소식을 들려주고
+조언을 얻거나
+위로를 듣거나
+축하를 받지 않으신가요?
+저는 새삼 살아있음을 느낀적이
+타인의 반응이기도 해요.
+
+(link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
+
+(input-box: bind $sadText)
+
+(link-goto: &quot;제출하기&quot;, &quot;기쁜일_제출&quot;)</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?
+
+(input-box: bind $sadText)
+
+(link-goto: &quot;제출하기&quot;, &quot;슬픈일_제출&quot;)
+</tw-passagedata><tw-passagedata pid="7" name="기쁜일_제출" tags="" position="1200,1400" size="100,100">당신의 이야기를 잘 받았습니다.
+
+&lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
+
+(link-goto: &quot;다음으로&quot;, &quot;다다다음&quot;)</tw-passagedata><tw-passagedata pid="8" name="다다다음" tags="" position="1100,1525" size="100,100">우리는 원해서 이 세계에 오지 않았습니다.
 슬프게도, 그것은 누구의 잘못도 아니죠.
 다만,
 떨어졌다는 사실만이 분명합니다.
@@ -228,11 +376,12 @@ document.addEventListener("twine:passageend", function () {
 우리는 이 세계의 무대 위에서
 계속해서 장면을 지나야 합니다.
 
-원하지 않은 세계에서 살아간다 라는말은
+원하지 않은 세계에서 살아간다
+라는말은
 당신에게 어떻게 들리시나요?
 
 [[다다다다음]]
-</tw-passagedata><tw-passagedata pid="10" name="다다다다음" tags="" position="1100,1450" size="100,100">어느 날, 저는 정말로 떨어질 뻔 했습니다.
+</tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1725" size="100,100">어느 날, 저는 정말로 떨어질 뻔 했습니다.
 다리가 떨리고, 손이 미끄러지고,
 세계가 나를 아래로 잡아당기는 순간이 있었죠.
 
@@ -241,7 +390,8 @@ document.addEventListener("twine:passageend", function () {
 
 그는 아주 조용히, 말했습니다.
 (사전의 마지막 관람자 텍스트)
-[[다다다다다음]]</tw-passagedata><tw-passagedata pid="11" name="다다다다다음" tags="" position="1100,1575" size="100,100">또 하나의 질문을 더 하고 싶습니다.
+
+[[다다다다다음]]</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1850" size="100,100">또 하나의 질문을 더 하고 싶습니다.
 당신은, 이 위험천만한 세계 속에서
 어떤 선택을 할 건가요?
 
@@ -252,18 +402,40 @@ document.addEventListener("twine:passageend", function () {
 이 세계는 언제나
 당신의 한 걸음을 기다리고 있으니까요.
 
-지금까지 그리고 앞으로도
-당신을 앞으로 나아가게 하는 문장이 있으신가요?
+&#39;&#39;지금까지 그리고 앞으로도
+당신을 앞으로 나아가게 하는
+문장이 있으신가요?&#39;&#39;
 
-(텍스트 입력3)
+saveAudienceText(&quot;word&quot;, &quot;&quot;, 관객이_쓴_텍스트);
+
 [[다다다다다다음]]
-</tw-passagedata><tw-passagedata pid="12" name="다다다다다다음" tags="" position="1100,1700" size="100,100">우리는 그렇게
+</tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1100,1975" size="100,100">우리는 그렇게
 서로의 장면 속에서
 잠시 등장했다 사라지며
 다음 사람에게 작은 빛을 남깁니다.
 우리를 걱정하며 지켜봐주는
 수많은 관객 앞에 위험천만한 묘기를 선보이는
-서커스 단원처럼요.</tw-passagedata></tw-storydata>
+서커스 단원처럼요.</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100">저번에는
+&lt;span id=&quot;random-sad&quot;&gt;이야기를 불러오는 중입니다...&lt;/span&gt;
+어쩌면 스스로 무너질 수도 있었지만
+저를 도와주는 사람들이 있기에
+버틸 수 있었답니다.
+반대로
+&lt;span id=&quot;random-happy&quot;&gt;이야기를 불러오는 중입니다...&lt;/span&gt;
+이런 좋은 일들도 있기 때문에
+모두가 묵묵히 잘 이겨냈다고
+생각이 들기도 해요.
+
+(link-goto: &quot;다음으로&quot;, &quot;NEXTT&quot;)
+</tw-passagedata><tw-passagedata pid="13" name="NEXTT" tags="" position="1100,1150" size="100,100">당신은 어떤 일이 있으셨나요?
+
+(link-goto: &quot;기쁜 일&quot;, &quot;기쁜 일?&quot;)
+(link-goto: &quot;슬픈 일&quot;, &quot;슬픈 일?&quot;)
+</tw-passagedata><tw-passagedata pid="14" name="슬픈일_제출" tags="" position="975,1400" size="100,100">당신의 이야기를 잘 받았습니다.
+
+&lt;span id=&quot;save-sad&quot;&gt;&lt;/span&gt;
+
+(link-goto: &quot;다음으로&quot;, &quot;다다다음&quot;)</tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
  * https://github.com/paulmillr/es6-shim
