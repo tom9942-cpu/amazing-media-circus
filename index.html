@@ -313,12 +313,13 @@ function updateRandomBoxesOnce() {
           : "아직 남겨진 슬픈 이야기가 없습니다.";
     });
   }
-   // 3) 희망 이야기 랜덤 표시
+
+  // 3) 희망 이야기 랜덤 표시
   const hopeBox = document.querySelector("#random-hope");
   if (hopeBox && !hopeBox.dataset.loaded) {
     console.log("found #random-hope, loading text");
     hopeBox.dataset.loaded = "1";
-    hopeBox.textContent = "음...";  // 기본 문구
+    hopeBox.textContent = "음...";
 
     fetchRandomAudienceText("event", "hope", function (text) {
       console.log("hope text from server:", text);
@@ -328,42 +329,50 @@ function updateRandomBoxesOnce() {
           : "아직 남겨진 희망의 이야기가 없습니다.";
     });
   }
-
+}
 
 // 0.7초마다 화면 검사해서, 해당 span이 등장하면 한 번만 실행
 setInterval(updateRandomBoxesOnce, 700);
 
 //------------------------------------------------
-// 6. 슬픈/기쁜 이야기 저장 + 연타 방지 + 자동 이동
+// 6. 슬픈/기쁜/희망 이야기 저장 + 연타 방지 + 자동 이동
 //------------------------------------------------
 function handleSave(kindKey) {
-  // ID 구성
-  const inputId  = (kindKey === "sad") ? "sad-input"
-                  : (kindKey === "happy") ? "happy-input"
-                  : "hope-input";
+  // 어떤 종류인지에 따라 id / hook 이름 매핑
+  const inputId  =
+    (kindKey === "sad")   ? "sad-input"   :
+    (kindKey === "happy") ? "happy-input" :
+                             "hope-input";
 
-  const btnId    = (kindKey === "sad") ? "save-sad-btn"
-                  : (kindKey === "happy") ? "save-happy-btn"
-                  : "save-hope-btn";
+  const btnId    =
+    (kindKey === "sad")   ? "save-sad-btn"   :
+    (kindKey === "happy") ? "save-happy-btn" :
+                             "save-hope-btn";
 
-  const statusId = (kindKey === "sad") ? "save-sad-status"
-                  : (kindKey === "happy") ? "save-happy-status"
-                  : "save-hope-status";
+  const statusId =
+    (kindKey === "sad")   ? "save-sad-status"   :
+    (kindKey === "happy") ? "save-happy-status" :
+                             "save-hope-status";
 
-  const hookName = (kindKey === "sad") ? "nextSad"
-                  : (kindKey === "happy") ? "nextHappy"
-                  : "nextHope";
+  const hookName =
+    (kindKey === "sad")   ? "nextSad"   :
+    (kindKey === "happy") ? "nextHappy" :
+                             "nextHope";
 
   const btn = document.getElementById(btnId);
   if (!btn) return;
 
-  // 연타 방지
-  if (btn.dataset.sending === "1") return;
+  // 🔒 이미 전송 중이면 무시 (연타 방지)
+  if (btn.dataset.sending === "1") {
+    console.log("already sending, ignore extra click");
+    return;
+  }
   btn.dataset.sending = "1";
   btn.disabled = true;
 
   const inputEl = document.getElementById(inputId);
   if (!inputEl) {
+    console.error("input element not found:", inputId);
     btn.disabled = false;
     btn.dataset.sending = "";
     return;
@@ -371,9 +380,10 @@ function handleSave(kindKey) {
 
   const kind = inputEl.dataset.kind || "event";
   const mood = inputEl.dataset.mood || kindKey;
-  const text = (inputEl.value || "").trim();
+  let text = (inputEl.value || "").trim();
 
   const statusEl = document.getElementById(statusId);
+
   if (!text) {
     if (statusEl) statusEl.textContent = "내용을 입력해 주세요.";
     btn.disabled = false;
@@ -383,27 +393,48 @@ function handleSave(kindKey) {
 
   if (statusEl) statusEl.textContent = "저장 중입니다...";
 
+  console.log("saving", kind, mood, text);
+
   saveAudienceText(kind, mood, text).then(function (result) {
+    console.log("save result:", result);
+
     if (result && result.status === "ok") {
-      if (statusEl) statusEl.textContent = "저장되었습니다!";
-      const link = document.querySelector('tw-hook[name="' + hookName + '"] tw-link');
-      if (link) link.click();
+      if (statusEl) statusEl.textContent = "저장되었습니다.";
+
+      // ✅ 저장 성공하면 자동으로 '다음으로' 링크 클릭
+      const link = document.querySelector(
+        'tw-hook[name="' + hookName + '"] tw-link'
+      );
+      if (link) {
+        link.click();
+      } else {
+        console.warn("next hook link not found:", hookName);
+      }
     } else {
       if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
       btn.disabled = false;
       btn.dataset.sending = "";
     }
+  }).catch(function (err) {
+    console.error("save error:", err);
+    if (statusEl) statusEl.textContent = "저장 중 오류가 발생했습니다.";
+    btn.disabled = false;
+    btn.dataset.sending = "";
   });
 }
 
-
-// 슬픈/기쁜 버튼 공통 클릭 리스너
+// 슬픈/기쁜/희망 버튼 공통 클릭 리스너
 document.addEventListener("click", function (e) {
-  if (e.target && e.target.id === "save-sad-btn") handleSave("sad");
-  if (e.target && e.target.id === "save-happy-btn") handleSave("happy");
-  if (e.target && e.target.id === "save-hope-btn") handleSave("hope");
+  if (e.target && e.target.id === "save-sad-btn") {
+    handleSave("sad");
+  }
+  if (e.target && e.target.id === "save-happy-btn") {
+    handleSave("happy");
+  }
+  if (e.target && e.target.id === "save-hope-btn") {
+    handleSave("hope");
+  }
 });
-
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 [[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
