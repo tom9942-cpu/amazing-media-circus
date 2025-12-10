@@ -147,6 +147,42 @@ tw-hook[name="nextHope"] {
 .choice-row tw-link {
   margin: 0 0.8rem;             /* 둘 사이 간격 */
 }
+
+/* 기쁜/슬픈/희망 이야기 입력칸을 눈에 잘 보이게 */
+#happy-input,
+#sad-input,
+#hope-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  min-height: 7em;              /* 세로 높이 확보 (5줄 정도 느낌) */
+  padding: 10px 12px;
+
+  border: 2px solid #000000;    /* 진한 검은 테두리 */
+  border-radius: 8px;
+  background-color: #ffffff;    /* 흰 배경 고정 */
+  color: #000000;
+  font-size: 16px;
+}
+
+.inline-bold {
+  font-weight: 700;     /* 굵게 */
+  line-height: 1em;     /* 줄 높이 고정 */
+  display: inline-block; /* inline-block으로 레이아웃 안정화 */
+}
+
+#random-sad,
+#random-happy,
+#random-hope {
+  font-weight: 700;        /* 굵게 */
+  display: inline-block;   /* 줄튀는 문제 방지 */
+  line-height: 1.2em;      /* 웬만하면 줄높이 안정화 */
+}
+
+tw-link {
+    display: inline-block !important;
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">console.log("DEBUG: Story JavaScript loaded!");
 
 //------------------------------------------------
@@ -266,7 +302,7 @@ function updateRandomBoxesOnce() {
   if (hopeBox && !hopeBox.dataset.loaded) {
     console.log("found #random-hope, loading text");
     hopeBox.dataset.loaded = "1";
-    hopeBox.textContent = "음...";
+    hopeBox.textContent = "그 말은...";
 
     fetchRandomAudienceText("event", "hope", function (text) {
       console.log("hope text from server:", text);
@@ -382,37 +418,50 @@ document.addEventListener("click", function (e) {
 </script><tw-passagedata pid="1" name="제목 없는 구절" tags="" position="1100,500" size="100,100">기다리고 있었어요.
 
 
-[[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기 해보고 싶었어요. 
-살아오며 흐르는 대로 걸어오다 보니,
-저는 어느새 이 화면 안에 떨어지게 되었고, 
-당신을 마주치게 되었네요.
+[[시작하기]]</tw-passagedata><tw-passagedata pid="2" name="시작하기" tags="" position="1100,625" size="100,100">반갑습니다. 줄곧 당신과 이야기해보고 싶었어요. 
 
-(link-goto: &quot;다음으로&quot;, &quot;다음&quot;)</tw-passagedata><tw-passagedata pid="3" name="다음" tags="" position="1100,750" size="100,100">저는 대화를 좋아해요.
+(link-goto: &quot;다음으로&quot;, &quot;3번노드&quot;)</tw-passagedata><tw-passagedata pid="3" name="다음" tags="" position="1100,825" size="100,100">저는 대화를 좋아해요.
 당신이 꾸려 온 세계.
 그리고 내가 이어가는 세계.
-서로 다른 이야기를 듣다보면
+서로 다른 이야기를 듣다 보면
 이 세상에 대해 더 알아가는 기분이 들어요.
 
-(link-goto: &quot;다음으로&quot;, &quot;다다음&quot;)</tw-passagedata><tw-passagedata pid="4" name="다다음" tags="" position="1100,875" size="100,100">당신에게 어떤 일이 생겼을 때,
+(link-goto: &quot;다음으로&quot;, &quot;다다음&quot;)
+</tw-passagedata><tw-passagedata pid="4" name="다다음" tags="" position="1075,950" size="100,100">당신에게 어떤 일이 생겼을 때
 지인에게 소식을 들려주고
-조언을 얻거나
-위로를 듣거나
+조언을 얻거나 위로를 듣거나
 축하를 받지 않으신가요?
 저는 살아 있음을 새삼 느낀 순간들이
 바로 이런 타인의 반응에서 오기도 했어요.
 
-(link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?&lt;/span&gt;
+(link-goto: &quot;다음으로&quot;, &quot;NEXT&quot;)</tw-passagedata><tw-passagedata pid="5" name="기쁜 일?" tags="" position="1200,1275" size="100,100">괜찮으시다면 이야기해 주시겠어요?
 
-&lt;textarea id=&quot;happy-input&quot; data-kind=&quot;event&quot; data-mood=&quot;happy&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
+&lt;textarea
+    id=&quot;happy-input&quot;
+    data-kind=&quot;event&quot;
+    data-mood=&quot;happy&quot;
+    rows=&quot;5&quot;
+    cols=&quot;40&quot;
+    placeholder=&quot;요즘 당신을 기쁘게 한 일을 적어주세요.&quot;&gt;
+&lt;/textarea&gt;
+
 
 &lt;button id=&quot;save-happy-btn&quot;&gt;제출하기&lt;/button&gt;
 &lt;span id=&quot;save-happy-status&quot;&gt;&lt;/span&gt;
 
 |nextHappy&gt;[ [[다음으로-&gt;기쁜일_제출]] ]
 
-</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기 해주시겠어요?&lt;/span&gt;
+</tw-passagedata><tw-passagedata pid="6" name="슬픈 일?" tags="" position="975,1275" size="100,100">괜찮으시다면 이야기해 주시겠어요?&lt;/span&gt;
 
-&lt;textarea id=&quot;sad-input&quot; data-kind=&quot;event&quot; data-mood=&quot;sad&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
+&lt;textarea
+    id=&quot;happy-input&quot;
+    data-kind=&quot;event&quot;
+    data-mood=&quot;sad&quot;
+    rows=&quot;5&quot;
+    cols=&quot;40&quot;
+    placeholder=&quot;요즘 당신을 슬프게 한 일을 적어주세요.&quot;&gt;
+&lt;/textarea&gt;
+
 
 &lt;button id=&quot;save-sad-btn&quot;&gt;제출하기&lt;/button&gt;
 &lt;span id=&quot;save-sad-status&quot;&gt;&lt;/span&gt;
@@ -430,52 +479,54 @@ document.addEventListener("click", function (e) {
 우리는 이 세계의 무대 위에서
 계속해서 장면들을 지나야 합니다.
 (link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)
-</tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1675" size="100,100">어느 날, 저는 정말로 깊은 곳으로 떨어질 뻔 했습니다.
-발 아래가 비어 버리며, 몸이 기울고,
+</tw-passagedata><tw-passagedata pid="9" name="다다다다음" tags="" position="1100,1675" size="100,100">어느 날, 저는 정말로 깊은 곳으로 떨어질 뻔했습니다.
+발아래가 비어 버리며, 몸이 기울고,
 숨이 막히고 울렁거리는 순간들이죠.
-그 찰나가 끔찍하게 길게 느껴졌습니다.
 
-그때, 누군가가 나를 붙잡아 주었습니다.
-
-그는 아주 조용히, 말했습니다.
-&lt;span id=&quot;random-hope&quot;&gt;기억해 내는 중...
-
-
-(link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1100,1825" size="100,100">당신의 세계 속에서
+(link-goto: &quot;다음으로&quot;, &quot;HOPE텍스트&quot;)</tw-passagedata><tw-passagedata pid="10" name="다다다다다음" tags="" position="1150,1950" size="100,100">당신의 세계 속에서
 어떤 선택을 하고 계실지 궁금합니다.
 그리고 그 선택을 내릴 수 있는
 &#39;&#39;지금까지 그리고 앞으로도
 당신을 앞으로 나아가게 하는
 문장이 있으신가요?&#39;&#39;
 
-&lt;textarea id=&quot;hope-input&quot; data-kind=&quot;event&quot; data-mood=&quot;hope&quot; rows=&quot;5&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;
-
+&lt;textarea
+    id=&quot;hope-input&quot;
+    data-kind=&quot;event&quot;
+    data-mood=&quot;hope&quot;
+    rows=&quot;5&quot;
+    cols=&quot;40&quot;
+    placeholder=&quot;당신은 어떤 문장으로 힘을 얻으시나요?&quot;&gt;
+&lt;/textarea&gt;
 &lt;button id=&quot;save-hope-btn&quot;&gt;제출하기&lt;/button&gt;
 &lt;span id=&quot;save-hope-status&quot;&gt;
 
 |nextHope&gt;[ [[다음으로-&gt;LAST]] ]
-</tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1125,2125" size="100,100">짧은 시간이었지만 대화할 수 있어서 좋았습니다.
+</tw-passagedata><tw-passagedata pid="11" name="다다다다다다음" tags="" position="1175,2250" size="100,100">짧은 시간이었지만 대화할 수 있어서 좋았습니다.
 이 대화로 당신이 누구인지 어떤 분이신지 알 수는 없지만
-저에게 들려줬던 이야기를 기억하겠습니다.
+저에게 들려줬던 이야기들은 분명히 기억하겠습니다.
 과거의 일들이 당신을 만들었듯
-남은 길 역시 멋있게 써 내려갈 수 있기를
-&lt;p id=&quot;cheer&quot; class=&quot;fadein&quot;&gt;&#39;&#39;응원할게요&#39;&#39;&lt;/p&gt;
+남은 길 역시 멋있게 써 내려갈 수 있기를 &lt;p id=&quot;cheer&quot; class=&quot;fadein&quot;&gt;&#39;&#39;응원할게요&#39;&#39; &lt;/span&gt;
+
+&#39;&#39;END&#39;&#39;
 
 &lt;script&gt;
   // 약간의 딜레이 후 페이드인
   setTimeout(() =&gt; {
     document.getElementById(&quot;cheer&quot;).classList.add(&quot;show&quot;);
   }, 300); 
-&lt;/script&gt;</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1025" size="100,100">&lt;p&gt;&lt;span id=&quot;random-sad&quot;&gt;잠시만 기다려주세요...&lt;/span&gt;
-이 일로 기분이 좋지 않고, 우울했지만&lt;/br&gt;
-반대로
-&lt;span id=&quot;random-happy&quot;&gt;음...
- 이런 좋은 일들도 있기 때문에
-우울한 순간들도 잘 이겨냈다는
-생각이 들기도 해요.&lt;/span&gt;
+&lt;/script&gt;</tw-passagedata><tw-passagedata pid="12" name="NEXT" tags="" position="1100,1075" size="100,100">&lt;p&gt;
+  &lt;span id=&quot;random-sad&quot;&gt;잠시만 기다려주세요...&lt;/span&gt;
+  이 일로 기분이 좋지 않고, 우울했지만&lt;/br&gt;
+  반대로
+  &lt;span id=&quot;random-happy&quot;&gt;음...&lt;/span&gt;
+  이런 좋은 일들도 있기 때문에
+  우울한 순간들도 잘 이겨냈다는
+  생각이 들기도 해요.
+&lt;/p&gt;
 
 (link-goto: &quot;다음으로&quot;, &quot;NEXTT&quot;)
-</tw-passagedata><tw-passagedata pid="13" name="NEXTT" tags="" position="1100,1150" size="100,100">당신은 요즘 어떠신가요?
+</tw-passagedata><tw-passagedata pid="13" name="NEXTT" tags="" position="1100,1200" size="100,100">당신은 요즘 어떠신가요?
 이야기를 짧게나마 들려주실 수 있나요?
 
 &lt;span class=&quot;choice-row&quot;&gt;
@@ -493,16 +544,27 @@ document.addEventListener("click", function (e) {
 다시 걸어갈 힘이 되기도 하죠.
 저도 좌절한 적이 있어요.
 
-(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY" tags="" position="1300,1525" size="100,100">그렇죠. 삶을 살다보면
-뜻 밖의 행운이 찾아올 때도 있고,
-오래 바라던 일이 이루어질 때도 있습니다.
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="16" name="HAPPY" tags="" position="1300,1525" size="100,100">그렇죠. 삶을 살다 보면
+뜻밖의 행운이 찾아올 때도 있고,
+오래 바라던 일이 이루어질 때도 있지 않나요?
 그리고 힘든 순간을 견디게 해주는
 작은 기억 하나가 큰 힘이 되기도 하죠.
 당신은 좌절했던 경험이 있으신가요?
-(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="17" name="LAST" tags="" position="1100,1975" size="100,100">그 문장은 분명 당혹스러운 순간들로부터 당신을 지켜주었겠죠.
+(link-goto: &quot;다음으로&quot;, &quot;다다다다음&quot;)</tw-passagedata><tw-passagedata pid="17" name="LAST" tags="" position="1150,2100" size="100,100">그 문장은 분명 당혹스러운 순간들로부터 당신을 지켜주었겠죠.
 짧은 글귀에서 신념이 보이기도 합니다.
-
+어쩌면 그런 신념들은, 우리가 인지하려 하지 않아도
+삶의 방향을 천천히 바꿔놓는 조용한 원칙일 수도 있겠네요.
 (link-goto: &quot;다음으로&quot;, &quot;다다다다다다음&quot;)
+</tw-passagedata><tw-passagedata pid="18" name="3번노드" tags="" position="1100,725" size="100,100">흘러오다 보니
+저는 어느새 이 화면 안에 떨어지게 되었고, 
+당신을 마주치게 되었네요.
+
+(link-goto: &quot;다음으로&quot;, &quot;다음&quot;)</tw-passagedata><tw-passagedata pid="19" name="HOPE텍스트" tags="" position="1175,1800" size="100,100">그 찰나가 끔찍하게 길게 느껴졌습니다.
+하지만 그때 나를 붙잡아 주는 문장이 있었습니다.
+
+&lt;span id=&quot;random-hope&quot;&gt;그 말은...&lt;/span&gt;
+
+(link-goto: &quot;다음으로&quot;, &quot;다다다다다음&quot;)
 </tw-passagedata></tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
